@@ -1,8 +1,11 @@
 package com.pratham.prathamdigital.util;
 
+import android.os.Environment;
+
 public class PD_Constant {
 
     public static final String BASE_URL = "http://prodigi.openiscool.org/api/pos/";
+    public static final String INTERNAL_PATH = Environment.getExternalStorageDirectory()+"/PraDigi/";
 
     //DATABASE TABLES
     public static final String TABLE_CONTENTS = "table_contents";

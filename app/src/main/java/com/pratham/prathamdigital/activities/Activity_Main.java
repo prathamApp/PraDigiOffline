@@ -1,31 +1,33 @@
 package com.pratham.prathamdigital.activities;
 
-import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityOptions;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.AnimatedVectorDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
-import android.os.AsyncTask;
+import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.PowerManager;
-import android.support.v4.app.ActivityCompat;
+import android.preference.PreferenceManager;
+import android.support.v4.content.ContextCompat;
+import android.support.v4.provider.DocumentFile;
 import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.TextUtils;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
@@ -39,7 +41,6 @@ import android.widget.Toast;
 import com.aloj.progress.DownloadProgressView;
 import com.android.volley.VolleyError;
 import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GooglePlayServicesUtil;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.common.api.GoogleApiClient.ConnectionCallbacks;
 import com.google.android.gms.common.api.GoogleApiClient.OnConnectionFailedListener;
@@ -49,7 +50,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
-import com.pratham.prathamdigital.PrathamApplication;
 import com.pratham.prathamdigital.R;
 import com.pratham.prathamdigital.adapters.RV_AgeFilterAdapter;
 import com.pratham.prathamdigital.adapters.RV_LevelAdapter;
@@ -66,7 +66,9 @@ import com.pratham.prathamdigital.custom.ScaleTransformer;
 import com.pratham.prathamdigital.custom.custom_fab.FloatingActionButton;
 import com.pratham.prathamdigital.custom.dialogs.SweetAlertDialog;
 import com.pratham.prathamdigital.custom.fancy_toast.TastyToast;
+import com.pratham.prathamdigital.dbclasses.BackupDatabase;
 import com.pratham.prathamdigital.dbclasses.DatabaseHandler;
+import com.pratham.prathamdigital.interfaces.ExtractInterface;
 import com.pratham.prathamdigital.interfaces.Interface_Level;
 import com.pratham.prathamdigital.interfaces.MainActivityAdapterListeners;
 import com.pratham.prathamdigital.interfaces.PermissionResult;
@@ -75,16 +77,16 @@ import com.pratham.prathamdigital.interfaces.VolleyResult_JSON;
 import com.pratham.prathamdigital.models.Modal_ContentDetail;
 import com.pratham.prathamdigital.models.Modal_DownloadContent;
 import com.pratham.prathamdigital.models.Modal_Level;
-import com.pratham.prathamdigital.models.Modal_Score;
 import com.pratham.prathamdigital.util.ActivityManagePermission;
 import com.pratham.prathamdigital.util.ConnectivityReceiver;
+import com.pratham.prathamdigital.util.CopyFiles;
+import com.pratham.prathamdigital.util.FileUtil;
 import com.pratham.prathamdigital.util.NetworkChangeReceiver;
 import com.pratham.prathamdigital.util.PD_Constant;
 import com.pratham.prathamdigital.util.PD_Utility;
 import com.pratham.prathamdigital.util.PermissionUtils;
+import com.pratham.prathamdigital.util.SDCardUtil;
 
-import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
@@ -110,7 +112,7 @@ import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
 
 public class Activity_Main extends ActivityManagePermission implements MainActivityAdapterListeners,
         VolleyResult_JSON, Observer, ProgressUpdate, Interface_Level, ConnectionCallbacks,
-        OnConnectionFailedListener, LocationListener, ConnectivityReceiver.ConnectivityReceiverListener {
+        OnConnectionFailedListener, LocationListener, ConnectivityReceiver.ConnectivityReceiverListener, ExtractInterface {
 
     private static final String TAGs = Activity_Main.class.getSimpleName();
     private static final int SEARCH = 1;
@@ -128,10 +130,10 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
     RecyclerView gallery_rv;
     @BindView(R.id.c_fab_language)
     FloatingActionButton fab_language;
-    //    @BindView(R.id.c_fab_search)
-//    FloatingActionButton fab_search;
-    @BindView(R.id.fab_recom)
-    FloatingActionButton fab_recom;
+    @BindView(R.id.c_fab_search)
+    FloatingActionButton fab_search; // Import Data
+    //    @BindView(R.id.fab_recom)
+//    FloatingActionButton fab_recom;
     @BindView(R.id.fab_my_library)
     FloatingActionButton fab_my_library;
     @BindView(R.id.txt_title)
@@ -188,6 +190,11 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
     private String url;
     public static TextToSp ttspeech;
 
+    Boolean SDcard;
+    public static final int RequestPermissionCode = 1;
+    int RequestCheckResult;
+    boolean RequestTF;
+
     // Location
     // LogCat tag
     private static final String TAG = Activity_Main.class.getSimpleName();
@@ -213,6 +220,8 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 
     ArrayList<String> path = new ArrayList<String>();
     boolean isConnected;
+    int SDCardLocationChooser = 7;
+    private String shareItPath;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -229,22 +238,22 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
         // Location
         // First we need to check availability of play services
-        if (checkPlayServices()) {
-            // Building the GoogleApi client
-            buildGoogleApiClient();
-            // createLocationRequest();
-        }
+//        if (checkPlayServices()) {
+//            // Building the GoogleApi client
+//            buildGoogleApiClient();
+//            // createLocationRequest();
+//        }
         // Checking Internet Connection
-        checkConnection();
-        if (isConnected) {
-            // Push the new Score to Server if connected to Internet
-            try {
-                PushDataToServer push = new PushDataToServer();
-                push.execute();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
+//        checkConnection();
+//        if (isConnected) {
+//            // Push the new Score to Server if connected to Internet
+//            try {
+//                PushDataToServer push = new PushDataToServer();
+//                push.execute();
+//            } catch (Exception e) {
+//                e.printStackTrace();
+//            }
+//        }
 /*
         // NO LONGER NEEDED AS WE ARE DOING THE SAME THING IN onResume() but STILL DONT DELETE
         // Show location
@@ -260,73 +269,78 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         }, 2000);*/
     }
 
-    // Push the new Score to Server if connected to Internet
-    public class PushDataToServer extends AsyncTask<Void, Void, Void> {
-        @Override
-        protected void onPreExecute() {
-            // Runs on UI thread
-        }
-
-        @Override
-        protected Void doInBackground(Void... params) {
-            // Runs on the background thread
-            pushNewData();
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void res) {
-            // Runs on the UI thread
-        }
+    @Override
+    public void onExtractDone(String zipPath) {
+        fab_my_library.performClick();
     }
+
+    // Push the new Score to Server if connected to Internet
+//    public class PushDataToServer extends AsyncTask<Void, Void, Void> {
+//        @Override
+//        protected void onPreExecute() {
+//            // Runs on UI thread
+//        }
+//
+//        @Override
+//        protected Void doInBackground(Void... params) {
+//            // Runs on the background thread
+//            pushNewData();
+//            return null;
+//        }
+//
+//        @Override
+//        protected void onPostExecute(Void res) {
+//            // Runs on the UI thread
+//        }
+//    }
 
     // Check internet Connection
 // Receiver for checking connection
-    private void checkConnection() {
-        isConnected = ConnectivityReceiver.isConnected();
-    }
+//    private void checkConnection() {
+//        isConnected = ConnectivityReceiver.isConnected();
+//    }
 
-    private void pushNewData() {
-        // Get New Data from DB(sentFlag = 0)
-        DatabaseHandler sdb = new DatabaseHandler(Activity_Main.this);
-        List<Modal_Score> scores = sdb.getNewScores();
-        if (scores != null && scores.size() > 0) {
-            JSONArray scoreData = new JSONArray();
-            {
-                try {
-                    for (int i = 0; i < scores.size(); i++) {
-                        JSONObject _obj = new JSONObject();
-                        Modal_Score scoreObj = (Modal_Score) scores.get(i);
-                        try {
-                            _obj.put("sessionId", scoreObj.SessionId);
-                            _obj.put("deviceId", scoreObj.DeviceId);
-                            _obj.put("resourceId", scoreObj.ResourceId);
-                            _obj.put("questionId", scoreObj.QuestionId);
-                            _obj.put("scoredMarks", scoreObj.ScoredMarks);
-                            _obj.put("location", scoreObj.Location);
-                            _obj.put("totalMarks", scoreObj.TotalMarks);
-                            _obj.put("startDateTime", scoreObj.StartTime);
-                            _obj.put("endDateTime", scoreObj.EndTime);
-                            _obj.put("level", scoreObj.Level);
-                            scoreData.put(_obj);
-                            // creating json file
-//                        String requestString = "{  \"scoreData\": " + scoreData + "}";
-//                        String deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-//                        WriteSettings(Activity_Main.this, requestString, "pushNewDataToServer-" + (deviceId.equals(null) ? "0000" : deviceId));
-                        } catch (JSONException e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    // Pushing File to Server
-                    Log.d("array:::", scoreData.toString());
-                    new PD_ApiRequest(Activity_Main.this, Activity_Main.this)
-                            .postDataVolley(Activity_Main.this, "SCORE", "http://prodigi.openiscool.org/api/pushdata/pushdata", scoreData.toString());
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-    }
+//    private void pushNewData() {
+//        // Get New Data from DB(sentFlag = 0)
+//        DatabaseHandler sdb = new DatabaseHandler(Activity_Main.this);
+//        List<Modal_Score> scores = sdb.getNewScores();
+//        if (scores != null && scores.size() > 0) {
+//            JSONArray scoreData = new JSONArray();
+//            {
+//                try {
+//                    for (int i = 0; i < scores.size(); i++) {
+//                        JSONObject _obj = new JSONObject();
+//                        Modal_Score scoreObj = (Modal_Score) scores.get(i);
+//                        try {
+//                            _obj.put("sessionId", scoreObj.SessionId);
+//                            _obj.put("deviceId", scoreObj.DeviceId);
+//                            _obj.put("resourceId", scoreObj.ResourceId);
+//                            _obj.put("questionId", scoreObj.QuestionId);
+//                            _obj.put("scoredMarks", scoreObj.ScoredMarks);
+//                            _obj.put("location", scoreObj.Location);
+//                            _obj.put("totalMarks", scoreObj.TotalMarks);
+//                            _obj.put("startDateTime", scoreObj.StartTime);
+//                            _obj.put("endDateTime", scoreObj.EndTime);
+//                            _obj.put("level", scoreObj.Level);
+//                            scoreData.put(_obj);
+//                            // creating json file
+////                        String requestString = "{  \"scoreData\": " + scoreData + "}";
+////                        String deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+////                        WriteSettings(Activity_Main.this, requestString, "pushNewDataToServer-" + (deviceId.equals(null) ? "0000" : deviceId));
+//                        } catch (JSONException e) {
+//                            e.printStackTrace();
+//                        }
+//                    }
+//                    // Pushing File to Server
+//                    Log.d("array:::", scoreData.toString());
+//                    new PD_ApiRequest(Activity_Main.this, Activity_Main.this)
+//                            .postDataVolley(Activity_Main.this, "SCORE", "http://prodigi.openiscool.org/api/pushdata/pushdata", scoreData.toString());
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        }
+//    }
 
     // Method to get Address
     public Address getAddress(double latitude, double longitude) {
@@ -345,87 +359,85 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
     /**
      * Method to display the location on UI
      */
-    private void displayLocation() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (mLastLocation != null) {
-            double latitude = mLastLocation.getLatitude();
-            double longitude = mLastLocation.getLongitude();
-            // pass latitude & longitude to address to get the Location Name
-            Address locationAddress = getAddress(latitude, longitude);
-            if (locationAddress != null) {
-                String address = locationAddress.getAddressLine(0);
-                String address1 = locationAddress.getAddressLine(1);
-                String city = locationAddress.getLocality();
-                String state = locationAddress.getAdminArea();
-                String country = locationAddress.getCountryName();
-                String postalCode = locationAddress.getPostalCode();
-                String currentLocation;
-                if (!TextUtils.isEmpty(address)) {
-                    currentLocation = address;
-                    SharedPreferences.Editor editor = pref.edit();
-                    // Clear Prev Data
-                    editor.clear();
-                    editor.commit(); // commit changes
-                    // Store Last Known Location
-                    editor.putString("prefLocation", currentLocation); // Storing string
-                    editor.commit(); // commit changes
-                    //Toast.makeText(this, currentLocation, Toast.LENGTH_SHORT).show();
-                }
-
-            }
-            //Toast.makeText(this, "lat : " + latitude + ", lon : " + longitude, Toast.LENGTH_SHORT).show();
-        } else {
-            // Toast.makeText(this, "Couldn't get the location. Make sure location is enabled on the device", Toast.LENGTH_SHORT).show();
-        }
-    }
+//    private void displayLocation() {
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            //    ActivityCompat#requestPermissions
+//            // here to request the missing permissions, and then overriding
+//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//            //                                          int[] grantResults)
+//            // to handle the case where the user grants the permission. See the documentation
+//            // for ActivityCompat#requestPermissions for more details.
+//            return;
+//        }
+//        mLastLocation = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+//        if (mLastLocation != null) {
+//            double latitude = mLastLocation.getLatitude();
+//            double longitude = mLastLocation.getLongitude();
+//            // pass latitude & longitude to address to get the Location Name
+//            Address locationAddress = getAddress(latitude, longitude);
+//            if (locationAddress != null) {
+//                String address = locationAddress.getAddressLine(0);
+//                String address1 = locationAddress.getAddressLine(1);
+//                String city = locationAddress.getLocality();
+//                String state = locationAddress.getAdminArea();
+//                String country = locationAddress.getCountryName();
+//                String postalCode = locationAddress.getPostalCode();
+//                String currentLocation;
+//                if (!TextUtils.isEmpty(address)) {
+//                    currentLocation = address;
+//                    SharedPreferences.Editor editor = pref.edit();
+//                    // Clear Prev Data
+//                    editor.clear();
+//                    editor.commit(); // commit changes
+//                    // Store Last Known Location
+//                    editor.putString("prefLocation", currentLocation); // Storing string
+//                    editor.commit(); // commit changes
+//                    //Toast.makeText(this, currentLocation, Toast.LENGTH_SHORT).show();
+//                }
+//
+//            }
+//            //Toast.makeText(this, "lat : " + latitude + ", lon : " + longitude, Toast.LENGTH_SHORT).show();
+//        } else {
+//            // Toast.makeText(this, "Couldn't get the location. Make sure location is enabled on the device", Toast.LENGTH_SHORT).show();
+//        }
+//    }
 
     /**
      * Creating google api client object
      */
-    protected synchronized void buildGoogleApiClient() {
-        mGoogleApiClient = new GoogleApiClient.Builder(this)
-                .addConnectionCallbacks(this)
-                .addOnConnectionFailedListener(this)
-                .addApi(LocationServices.API).build();
-    }
+//    protected synchronized void buildGoogleApiClient() {
+//        mGoogleApiClient = new GoogleApiClient.Builder(this)
+//                .addConnectionCallbacks(this)
+//                .addOnConnectionFailedListener(this)
+//                .addApi(LocationServices.API).build();
+//    }
 
     /**
      * Method to verify google play services on the device
      */
-    private boolean checkPlayServices() {
-        int resultCode = GooglePlayServicesUtil
-                .isGooglePlayServicesAvailable(this);
-        if (resultCode != ConnectionResult.SUCCESS) {
-            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
-                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
-                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
-            } else {
-                Toast.makeText(getApplicationContext(),
-                        "This device is not supported.", Toast.LENGTH_LONG)
-                        .show();
-                finish();
-            }
-            return false;
-        }
-        return true;
-    }
-
+//    private boolean checkPlayServices() {
+//        int resultCode = GooglePlayServicesUtil
+//                .isGooglePlayServicesAvailable(this);
+//        if (resultCode != ConnectionResult.SUCCESS) {
+//            if (GooglePlayServicesUtil.isUserRecoverableError(resultCode)) {
+//                GooglePlayServicesUtil.getErrorDialog(resultCode, this,
+//                        PLAY_SERVICES_RESOLUTION_REQUEST).show();
+//            } else {
+//                Toast.makeText(getApplicationContext(),
+//                        "This device is not supported.", Toast.LENGTH_LONG)
+//                        .show();
+//                finish();
+//            }
+//            return false;
+//        }
+//        return true;
+//    }
     @Override
     protected void onStart() {
         super.onStart();
-        if (mGoogleApiClient != null) {
-            mGoogleApiClient.connect();
-        }
+//        if (mGoogleApiClient != null) {
+//            mGoogleApiClient.connect();
+//        }
     }
 
     /**
@@ -447,30 +459,29 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
     /**
      * Creating location request object
      */
-    protected void createLocationRequest() {
-        mLocationRequest = new LocationRequest();
-        mLocationRequest.setInterval(UPDATE_INTERVAL);
-        mLocationRequest.setFastestInterval(FATEST_INTERVAL);
-        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        mLocationRequest.setSmallestDisplacement(DISPLACEMENT); // 10 meters
-    }
-
+//    protected void createLocationRequest() {
+//        mLocationRequest = new LocationRequest();
+//        mLocationRequest.setInterval(UPDATE_INTERVAL);
+//        mLocationRequest.setFastestInterval(FATEST_INTERVAL);
+//        mLocationRequest.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
+//        mLocationRequest.setSmallestDisplacement(DISPLACEMENT); // 10 meters
+//    }
+//
     /**
      * Starting the location updates
      */
-    protected void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // TODO: Consider calling
-            //    ActivityCompat#requestPermissions
-            // here to request the missing permissions, and then overriding
-            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
-            //                                          int[] grantResults)
-            // to handle the case where the user grants the permission. See the documentation
-            // for ActivityCompat#requestPermissions for more details.
-            return;
-        }
-        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
-    }
+//    protected void startLocationUpdates() {
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+//            //    ActivityCompat#requestPermissions
+//            // here to request the missing permissions, and then overriding
+//            //   public void onRequestPermissionsResult(int requestCode, String[] permissions,
+//            //                                          int[] grantResults)
+//            // to handle the case where the user grants the permission. See the documentation
+//            // for ActivityCompat#requestPermissions for more details.
+//            return;
+//        }h
+//        LocationServices.FusedLocationApi.requestLocationUpdates(mGoogleApiClient, mLocationRequest, this);
+//    }
 
     /**
      * Stopping location updates
@@ -482,10 +493,10 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
     @Override
     public void onConnected(Bundle arg0) {
         // Once connected with google api, get the location
-        displayLocation();
-        if (mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+//        displayLocation();
+//        if (mRequestingLocationUpdates) {
+//            startLocationUpdates();
+//        }
     }
 
     @Override
@@ -494,21 +505,19 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         mLastLocation = location;
         Toast.makeText(getApplicationContext(), "Location changed!", Toast.LENGTH_SHORT).show();
         // Displaying the new location on UI
-        displayLocation();
+//        displayLocation();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-
-
-        PrathamApplication.getInstance().setConnectivityListener(this);
+//        PrathamApplication.getInstance().setConnectivityListener(this);
         // Location
-        checkPlayServices();
+//        checkPlayServices();
         // Resuming the periodic location updates
-        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
-            startLocationUpdates();
-        }
+//        if (mGoogleApiClient.isConnected() && mRequestingLocationUpdates) {
+//            startLocationUpdates();
+//        }
         NetworkChangeReceiver.getObservable().addObserver(this);
         if ((!isInitialized)) {
             layoutManager = new GalleryLayoutManager(GalleryLayoutManager.VERTICAL);
@@ -530,6 +539,26 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                 fab_my_library.performClick();
             }
         }
+        if (!isPermissionsGranted(Activity_Main.this, new String[]{PermissionUtils.Manifest_WRITE_EXTERNAL_STORAGE,
+                PermissionUtils.Manifest_READ_EXTERNAL_STORAGE})) {
+            askCompactPermissions(new String[]{PermissionUtils.Manifest_WRITE_EXTERNAL_STORAGE,
+                    PermissionUtils.Manifest_READ_EXTERNAL_STORAGE}, new PermissionResult() {
+                @Override
+                public void permissionGranted() {
+                    BackupDatabase.backup(Activity_Main.this);
+                }
+
+                @Override
+                public void permissionDenied() {
+                }
+
+                @Override
+                public void permissionForeverDenied() {
+                }
+            });
+        } else {
+            BackupDatabase.backup(Activity_Main.this);
+        }
     }
 
     private void ShowIntro(final int target) {
@@ -544,11 +573,11 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             id = R.id.c_fab_search;
             text = getResources().getString(R.string.search);
             content_text = getResources().getString(R.string.search_and_download);
-        } */ else if (target == RECOMMEND) {
+        }  else if (target == RECOMMEND) {
             id = R.id.fab_recom;
             text = getResources().getString(R.string.recommended);
             content_text = getResources().getString(R.string.download_recommended);
-        } else {
+        } */ else {
             id = R.id.c_fab_language;
             text = getResources().getString(R.string.language);
             content_text = getResources().getString(R.string.select_language);
@@ -570,11 +599,12 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                                 ShowIntro(RECOMMEND);
                             } else */
                             if (target == MY_LIBRARY) {
-                                ShowIntro(RECOMMEND);
-                            } else if (target == RECOMMEND) {
+                                fab_my_library.performClick();
+
+                            } /*else if (target == RECOMMEND) {
                                 db.SetIntroFlagTrue(1, googleId);
                                 fab_recom.performClick();
-                            } else {
+                            } */ else {
                                 fab_language.performClick();
                             }
                         }
@@ -786,27 +816,184 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         initializeGalleryAdapater(isLibrary);
     }
 
-//    @OnClick(R.id.c_fab_search)
-//    public void importData() {
-//        //Creating the instance of PopupMenu
-//        PopupMenu popup = new PopupMenu(Activity_Main.this, fab_search);
-//        //Inflating the Popup using xml file
-//        popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
-//
-//        //registering popup with OnMenuItemClickListener
-//        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
-//            public boolean onMenuItemClick(MenuItem item) {
-//                // To Do on Import button Clicked
-//
-//                // File Picker
-//
-//                Toast.makeText(Activity_Main.this, "You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
-//                return true;
+    @OnClick(R.id.c_fab_search)
+    public void importData() {
+        //Creating the instance of PopupMenu
+        PopupMenu popup = new PopupMenu(Activity_Main.this, fab_search);
+        //Inflating the Popup using xml file
+        popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
+
+        //registering popup with OnMenuItemClickListener
+        popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+            public boolean onMenuItemClick(MenuItem item) {
+                // ToDo on Import button Clicked
+
+                // Check extSDCard present or not
+                if (hasRealRemovableSdCard(Activity_Main.this)) {
+                    // SD Card Available
+                    extSDCardAvailable();
+                    //Toast.makeText(Activity_Main.this, "SD Card Available !!!", Toast.LENGTH_SHORT).show();
+                } else {
+                    // SD Card Not Available
+                    intStorageAvailable();
+                    //Toast.makeText(Activity_Main.this, "SD Card Not Available !!!", Toast.LENGTH_SHORT).show();
+                }
+                //   Toast.makeText(Activity_Main.this, "You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+                return true;
+            }
+        });
+
+        popup.show();//showing popup menu
+
+    }
+
+    private void intStorageAvailable() {
+
+        new CopyFiles(db, shareItPath, Activity_Main.this,
+                Activity_Main.this).execute();
+
+    }
+
+
+    public void extSDCardAvailable() {
+        // File Picker
+        if (!isPermissionsGranted(Activity_Main.this, new String[]{PermissionUtils.Manifest_WRITE_EXTERNAL_STORAGE,
+                PermissionUtils.Manifest_READ_EXTERNAL_STORAGE})) {
+            askCompactPermissions(new String[]{PermissionUtils.Manifest_WRITE_EXTERNAL_STORAGE,
+                    PermissionUtils.Manifest_READ_EXTERNAL_STORAGE}, new PermissionResult() {
+                @Override
+                public void permissionGranted() {
+//                            chooseFile();
+                    selectSDCard();
+                }
+
+                @Override
+                public void permissionDenied() {
+                }
+
+                @Override
+                public void permissionForeverDenied() {
+                }
+            });
+        } else {
+            selectSDCard();
+            // Choose content.zip file containing data
+            //chooseFile();    // Internal Storage Code
+
+            // Call File Choser for selectiong POS Ext Zip
+//                    AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
+//                    alertDialogBuilder.setMessage("Please select content.zip from Device !!!");
+//                    alertDialogBuilder.setPositiveButton("Ok",
+//                            new DialogInterface.OnClickListener() {
+//                                @Override
+//                                public void onClick(DialogInterface arg0, int arg1) {
+//                                    chooseFile();
+//                                }
+//                            });
+//                    AlertDialog alertDialog = alertDialogBuilder.create();
+//                    alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
+//                    alertDialog.setTitle("POSexternal.zip à¤«à¤¼à¤¾à¤‡à¤² à¤šà¥à¤¨à¥‡à¤‚");
+//                    alertDialog.setCanceledOnTouchOutside(false);
+//                    alertDialog.show();
+        }
+
+    }
+
+    public static boolean hasRealRemovableSdCard(Context context) {
+        return ContextCompat.getExternalFilesDirs(context, null).length >= 2;
+    }
+
+    // Update Media
+//    private void chooseFile() {
+//        DialogProperties properties = new DialogProperties();
+//        properties.selection_mode = DialogConfigs.SINGLE_MODE;
+//        properties.selection_type = DialogConfigs.FILE_SELECT;
+//        properties.root = new File(Environment.getExternalStorageDirectory().getAbsolutePath());
+//        properties.error_dir = new File(DialogConfigs.DEFAULT_DIR);
+//        properties.offset = new File(DialogConfigs.DEFAULT_DIR);
+//        properties.extensions = null;
+//        FilePickerDialog dialog = new FilePickerDialog(Activity_Main.this, properties);
+//        dialog.setTitle("Select a File");
+//        dialog.setDialogSelectionListener(new DialogSelectionListener() {
+//            @Override
+//            public void onSelectedFilePaths(String[] files) {
+//                //files is the array of the paths of files selected by the Application User.
+//                Log.d("path:::", files[0]);
+//                shareItPath = files[0];
+////                selectSDCard();
 //            }
 //        });
-//
-//        popup.show();//showing popup menu
-//
+//        dialog.show();
+//    }
+
+    private void selectSDCard() {
+//        final String ReceivedFileName = shareItPath.replace("content://com.estrongs.files/storage/emulated/0/SHAREit/files/", "");
+//        Log.d("shareItPath ::::", shareItPath);
+//        Log.d("ReceivedFileName ::::", ReceivedFileName);
+        // If Zip Found
+//        if (ReceivedFileName.endsWith("content.zip")) {
+//                    String TargetPath = shareItPath.replace("POSexternal.zip","");
+//        String target = new File(shareItPath).getParent();
+//        Log.d("target::", target);
+        if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", null) == null
+                && PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", "").equals("")) {
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
+            //  alertDialogBuilder.setMessage("Keep your Tablet Activity_Main charged & Select External SD Card Path !!!");
+            LayoutInflater factory = LayoutInflater.from(Activity_Main.this);
+            final View view = factory.inflate(R.layout.custom_alert_box_sd_card, null);
+            alertDialogBuilder.setView(view);
+            alertDialogBuilder.setPositiveButton("Ok",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                            startActivityForResult(intent, SDCardLocationChooser);
+                        }
+                    });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
+            alertDialog.setTitle("Choose SD card in Root Location");
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.setView(view);
+            alertDialog.show();
+//            } else {
+//                try {
+//                    new CopyFiles(shareItPath, Activity_Main.this,
+//                            Activity_Main.this).execute();
+//                } catch (Exception e) {
+//                    e.printStackTrace();
+//                }
+//            }
+        } else {
+            new CopyFiles(db, shareItPath, Activity_Main.this,
+                    Activity_Main.this).execute();
+        }
+    }
+
+
+//    // Update Media Content             // OLD CODE INTERNAL
+//    private void chooseFile() {
+//        DialogProperties properties = new DialogProperties();
+//        properties.selection_mode = DialogConfigs.SINGLE_MODE;
+//        properties.selection_type = DialogConfigs.FILE_SELECT;
+//        properties.root = new File("/");
+//        properties.error_dir = new File(DialogConfigs.DEFAULT_DIR);
+//        properties.offset = new File(DialogConfigs.DEFAULT_DIR);
+//        properties.extensions = null;
+//        FilePickerDialog dialog = new FilePickerDialog(Activity_Main.this, properties);
+//        dialog.setTitle("Select a File");
+//        dialog.setDialogSelectionListener(new DialogSelectionListener() {
+//            @Override
+//            public void onSelectedFilePaths(String[] files) {
+//                //files is the array of the paths of files selected by the Application User.
+//                Log.d("path:::", files[0]);
+//                if (files[0].endsWith("content.zip")) {
+//                    new CopyTask(Activity_Main.this, files[0], Activity_Main.this);
+//                }
+//            }
+//        });
+//        dialog.show();
 //    }
 
 
@@ -817,22 +1004,22 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 //                fab_search, "transition_search");
 //        startActivityForResult(intent, ACTIVITY_SEARCH, options.toBundle());
 //    }
-
-    @OnClick(R.id.fab_recom)
-    public void setFabRecom() {
-        if (!db.CheckIntroShownStatus(googleId)) {
-            db.SetIntroFlagTrue(1, googleId);
-        }
-        isLibrary = false;
-        txt_title.setAlpha(0f);
-        txt_title.setText(getResources().getString(R.string.recommended));
-        PD_Utility.setFont(Activity_Main.this, txt_title);
-        txt_title.animate().alpha(1f).setStartDelay(100).setDuration(500).setInterpolator(new FastOutSlowInInterpolator());
-        initializeGalleryAdapater(isLibrary);
-    }
+//
+//    @OnClick(R.id.fab_recom)
+//    public void setFabRecom() {
+//        if (!db.CheckIntroShownStatus(googleId)) {
+//            db.SetIntroFlagTrue(1, googleId);
+//        }
+//        isLibrary = false;
+//        txt_title.setAlpha(0f);
+//        txt_title.setText(getResources().getString(R.string.recommended));
+//        PD_Utility.setFont(Activity_Main.this, txt_title);
+//        txt_title.animate().alpha(1f).setStartDelay(100).setDuration(500).setInterpolator(new FastOutSlowInInterpolator());
+//        initializeGalleryAdapater(isLibrary);
+//    }
 
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == ACTIVITY_LANGUAGE) {
             if (resultCode == Activity.RESULT_OK) {
@@ -844,10 +1031,11 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                 if (!db.CheckIntroShownStatus(googleId)) {
                     ShowIntro(MY_LIBRARY);
                 } else {
-                    if (!isLibrary)
-                        fab_recom.performClick();
-                    else
+                    if (!isLibrary) {
+//                        fab_recom.performClick();
+                    } else {
                         fab_my_library.performClick();
+                    }
                 }
             }
         } else if (requestCode == ACTIVITY_DOWNLOAD) {
@@ -861,6 +1049,64 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             }
         } else if (requestCode == ACTIVITY_SEARCH) {
             fab_my_library.performClick();
+        } else if (requestCode == SDCardLocationChooser) {
+            Uri treeUri = data.getData();
+            String path = SDCardUtil.getFullPathFromTreeUri(treeUri, Activity_Main.this);
+            Log.d("SDCardPath :::", path);
+            final int takeFlags = data.getFlags()
+                    & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+            getContentResolver().takePersistableUriPermission(treeUri, takeFlags);
+            try {
+                // check path is correct or not
+                extractToSDCard(path, treeUri);
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    // method to copy files to sd card
+    private void extractToSDCard(String path, final Uri treeUri) {
+        String base_path = FileUtil.getExtSdCardFolder(new File(path), Activity_Main.this);
+        if (base_path != null && base_path.equalsIgnoreCase(path)) {
+            Log.d("Base path :::", base_path);
+            Log.d("targetPath :::", path);
+            // Path ( Selected )
+            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this)
+                    .edit().putString("URI", treeUri.toString()).apply();
+            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this)
+                    .edit().putString("PATH", path).apply();
+
+//            new UnZipTask(CrlShareReceiveProfiles.this, shareItPath).execute();
+            new CopyFiles(db, shareItPath, Activity_Main.this,
+                    Activity_Main.this).execute();
+        } else {
+            // Alert Dialog Call itself if wrong path selected
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
+            //  alertDialogBuilder.setMessage("Keep your Tablet Sufficiently charged & Select External SD Card Path !!!");
+            LayoutInflater factory = LayoutInflater.from(Activity_Main.this);
+            final View view = factory.inflate(R.layout.custom_alert_box_sd_card, null);
+            alertDialogBuilder.setView(view);
+            alertDialogBuilder.setPositiveButton("Ok",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface arg0, int arg1) {
+
+                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                            startActivityForResult(intent, SDCardLocationChooser);
+                        }
+                    });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
+            alertDialog.setTitle("Select External SD Card Location");
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.setView(view);
+            alertDialog.show();
+
+            Toast.makeText(Activity_Main.this, "Please Select SD Card Only !!!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -897,7 +1143,40 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                     }
                 } else if (subContents.get(position).getResourcetype().equalsIgnoreCase("pdf")) {
                     Intent intent = new Intent(Activity_Main.this, Activity_PdfViewer.class);
+                    //TODO change path
                     File directory = Activity_Main.this.getDir("PrathamPdf", Context.MODE_PRIVATE);
+                    if (directory == null || directory.listFiles().length == 0) {
+
+                        String path = "";
+                        // Check extSDCard present or not
+                        if (hasRealRemovableSdCard(Activity_Main.this)) {
+                            // SD Card Available
+                            // SD Card Path
+                            String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
+
+                            DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
+                            DocumentFile tmp = pickedDir.findFile("PraDigi");
+                            DocumentFile tmp1 = tmp.findFile("app_PrathamPdf");
+//                        DocumentFile tmp2 = tmp1.findFile(subContents.get(position).getResourcepath());
+                            path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
+
+
+                        } else {
+                            // SD Card Not Available
+                            path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamPdf";
+                            ;
+                        }
+
+//                        // OLD CODE
+//                        String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
+//                        DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
+//                        DocumentFile tmp = pickedDir.findFile("PraDigi");
+//                        DocumentFile tmp1 = tmp.findFile("app_PrathamPdf");
+//                        String path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
+
+
+                        directory = new File(path);
+                    }
                     Log.d("game_filepath:::", directory.getAbsolutePath() + "/" + subContents.get(position).getResourcepath());
                     intent.putExtra("pdfPath", "file:///" + directory.getAbsolutePath() + "/" + subContents.get(position).getResourcepath());
                     intent.putExtra("pdfTitle", subContents.get(position).getNodetitle());
@@ -957,7 +1236,42 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 
     private void openGameInWebView(Modal_ContentDetail contentDetail) {
         Intent intent = new Intent(Activity_Main.this, Activity_WebView.class);
+        //TODO change path
         File directory = Activity_Main.this.getDir("PrathamGame", Context.MODE_PRIVATE);
+        if (directory == null || directory.listFiles().length == 0) {
+
+            String path = "";
+            // Check extSDCard present or not
+            if (hasRealRemovableSdCard(Activity_Main.this)) {
+                // SD Card Available
+                // SD Card Path
+                String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
+
+                DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
+                DocumentFile tmp = pickedDir.findFile("PraDigi");
+                DocumentFile tmp1 = tmp.findFile("app_PrathamGame");
+                path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
+
+            } else {
+                // SD Card Not Available
+                path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
+                ;
+            }
+
+
+            directory = new File(path);
+
+
+//            //OLD CODE
+//            String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
+//            DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
+//            DocumentFile tmp = pickedDir.findFile("PraDigi");
+//            DocumentFile tmp1 = tmp.findFile("app_PrathamGame");
+//            String path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
+
+
+            directory = new File(path);
+        }
         intent.putExtra("index_path", directory.getAbsolutePath() + "/" + contentDetail.getResourcepath());
         intent.putExtra("path", directory.getAbsolutePath() + "/" +
                 new StringTokenizer(contentDetail.getResourcepath(), "/").nextToken() + "/");
@@ -1062,7 +1376,43 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 
     private void deleteResource(String resourcetype, String resourcePath) {
         if (resourcetype.equalsIgnoreCase("Game")) {
+            //TODO change path
             File dir = getDir("PrathamGame", Context.MODE_PRIVATE);
+            if (dir == null || dir.listFiles().length == 0) {
+
+
+                String path = "";
+                // Check extSDCard present or not
+                if (hasRealRemovableSdCard(Activity_Main.this)) {
+                    // SD Card Available
+                    // SD Card Path
+                    String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
+
+                    DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
+                    DocumentFile tmp = pickedDir.findFile("PraDigi");
+                    DocumentFile tmp1 = tmp.findFile("app_PrathamGame");
+//                        DocumentFile tmp2 = tmp1.findFile(subContents.get(position).getResourcepath());
+                    path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
+
+
+                } else {
+                    // SD Card Not Available
+                    path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
+                    ;
+                }
+
+
+
+                /*// OLD CODE
+                String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
+                DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
+                DocumentFile tmp = pickedDir.findFile("PraDigi");
+                DocumentFile tmp1 = tmp.findFile("app_PrathamGame");
+//                        DocumentFile tmp2 = tmp1.findFile(subContents.get(position).getResourcepath());
+                String path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
+                */
+                dir = new File(path);
+            }
             File file = new File(dir.getAbsolutePath() + "/" + resourcePath);
             Log.d("dir_path2::", file.getAbsolutePath());
             boolean deleted = deleteDir(file);

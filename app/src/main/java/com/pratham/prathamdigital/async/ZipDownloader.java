@@ -59,15 +59,6 @@ public class ZipDownloader {
         protected void onPreExecute() {
             super.onPreExecute();
             wakeLock.acquire();
-//            Intent intent = new Intent(this, MainActivity.class);
-//            final PendingIntent pendingIntent = PendingIntent.getActivity(getApplicationContext(), 0, intent, 0);
-//            notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-//            builder = new NotificationCompat.Builder(context);
-//            builder.setSmallIcon(R.drawable.ic_download_icon);
-////            builder.setContentIntent(pendingIntent);
-//            builder.setContentTitle("Downloading your file");
-//            builder.setProgress(0, 0, true);
-//            builder.setAutoCancel(false);
         }
 
         @Override
@@ -123,7 +114,6 @@ public class ZipDownloader {
                     System.out.println("lucy download unzip");
                     unzip();
                 } catch (IOException e) {
-                    // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
             } else {

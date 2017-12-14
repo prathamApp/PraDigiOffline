@@ -3,7 +3,11 @@ package com.pratham.prathamdigital.adapters;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
+import android.os.Environment;
 import android.os.Handler;
+import android.preference.PreferenceManager;
+import android.support.v4.provider.DocumentFile;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,12 +20,15 @@ import android.widget.TextView;
 import com.pratham.prathamdigital.R;
 import com.pratham.prathamdigital.interfaces.MainActivityAdapterListeners;
 import com.pratham.prathamdigital.models.Modal_ContentDetail;
+import com.pratham.prathamdigital.util.SDCardUtil;
 
 import java.io.File;
 import java.util.ArrayList;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+
+import static com.pratham.prathamdigital.activities.Activity_Main.hasRealRemovableSdCard;
 
 /**
  * Created by HP on 01-08-2017.
@@ -67,7 +74,33 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
                 .substring(sub_content.get(holder.getAdapterPosition()).getNodeserverimage().lastIndexOf('/') + 1);
         //path to /data/data/yourapp/app_data/dirName
         ContextWrapper cw = new ContextWrapper(context);
+        //TODO change path
         File directory = cw.getDir("PrathamImages", Context.MODE_PRIVATE);
+        if (directory == null || directory.listFiles().length == 0) {
+
+
+            String path = "";
+            // Check extSDCard present or not
+            if (hasRealRemovableSdCard(context)) {
+                // SD Card Available
+                // SD Card Path
+                String uri = PreferenceManager.getDefaultSharedPreferences(context).getString("URI", "");
+
+                DocumentFile pickedDir = DocumentFile.fromTreeUri(context, Uri.parse(uri));
+                DocumentFile tmp = pickedDir.findFile("PraDigi");
+                DocumentFile tmp1 = tmp.findFile("app_PrathamImages");
+//                        DocumentFile tmp2 = tmp1.findFile(subContents.get(position).getResourcepath());
+                path = SDCardUtil.getRealPathFromURI(context, tmp1.getUri());
+
+
+            } else {
+                // SD Card Not Available
+                path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";;
+            }
+
+            directory = new File(path);
+
+        }
         File filepath = new File(directory, fileName);
         Log.d("adapter_filename:::", fileName);
         Log.d("adapter_filepath:::", filepath.toString());
@@ -80,17 +113,17 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
         });
         if (sub_content.get(holder.getAdapterPosition()).getNodetype().equalsIgnoreCase("Resource")) {
             holder.sub_lib_content_img.setScaleType(ImageView.ScaleType.FIT_XY);
-            holder.c_delete.setVisibility(View.VISIBLE);
-            holder.c_delete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    browseAdapter_clicks.onContentDelete(holder.getAdapterPosition());
-                }
-            });
+//            holder.c_delete.setVisibility(View.VISIBLE);
+//            holder.c_delete.setOnClickListener(new View.OnClickListener() {
+//                @Override
+//                public void onClick(View view) {
+//                    browseAdapter_clicks.onContentDelete(holder.getAdapterPosition());
+//                }
+//            });
         } else {
             holder.sub_lib_content_img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            holder.c_delete.setVisibility(View.GONE);
-            holder.c_delete.setOnClickListener(null);
+//            holder.c_delete.setVisibility(View.GONE);
+//            holder.c_delete.setOnClickListener(null);
         }
     }
 

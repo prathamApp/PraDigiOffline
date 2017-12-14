@@ -85,7 +85,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public void onCreate(SQLiteDatabase db) {
         String CREATE_DOWNLOADED_TABLE = "CREATE TABLE " + TABLE_DOWNLOADED + "("
                 + KEY_RESOURCEID + " TEXT,"
-                + KEY_NODEID + " TEXT,"
+                + KEY_NODEID + " TEXT PRIMARY KEY,"
                 + KEY_NODETITLE + " TEXT" + ")";
         String CREATE_SCORE_TABLE = "CREATE TABLE " + TABLE_SCORE + "("
                 + RES_ID + " TEXT,"
@@ -98,7 +98,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + SENT_FLAG + " INTEGER,"
                 + DEVICE_ID + " TEXT" + ")";
         String CREATE_PARENT_TABLE = "CREATE TABLE " + TABLE_PARENT + "("
-                + CONTENT_NODEID + " TEXT,"
+                + CONTENT_NODEID + " TEXT PRIMARY KEY,"
                 + CONTENT_NODETYPE + " TEXT,"
                 + CONTENT_NODETITLE + " TEXT,"
                 + CONTENT_NODEKEYWORD + " TEXT,"
@@ -112,7 +112,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 + CONTENT_LEVEL + " TEXT,"
                 + CONTENT_PARENTID + " TEXT" + ")";
         String CREATE_CHILD_TABLE = "CREATE TABLE " + TABLE_CHILD + "("
-                + CONTENT_NODEID + " TEXT,"
+                + CONTENT_NODEID + " TEXT PRIMARY KEY,"
                 + CONTENT_NODETYPE + " TEXT,"
                 + CONTENT_NODETITLE + " TEXT,"
                 + CONTENT_NODEKEYWORD + " TEXT,"
@@ -236,7 +236,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             contentValues.put("level", contentDetail.getLevel());
             contentValues.put("parentid", contentDetail.getParentid());
 
-            database.insert(tableName, null, contentValues);
+            database.replace(tableName, null, contentValues);
             database.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -251,7 +251,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         values.put(KEY_NODEID, content.getNodeid());
         values.put(KEY_NODETITLE, content.getNodetitle());
         // Inserting Row
-        db.insert(TABLE_DOWNLOADED, null, values);
+        db.replace(TABLE_DOWNLOADED, null, values);
         db.close(); // Closing database connection
     }
 
@@ -334,7 +334,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.close();
             return contents;
         } catch (Exception e) {
-            // TODO: handle exception
             e.printStackTrace();
         }
         return contents;
@@ -363,7 +362,6 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             db.close();
             return ids;
         } catch (Exception e) {
-            // TODO: handle exception
             e.printStackTrace();
         }
 

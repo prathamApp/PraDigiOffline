@@ -21,8 +21,8 @@ android {
         applicationId "com.pratham.prathamdigital"
         minSdkVersion 21
         targetSdkVersion 26
-        versionCode 15
-        versionName "2.4"
+        versionCode 16
+        versionName "2.4.1"
         vectorDrawables.useSupportLibrary = true
         multiDexEnabled true
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
@@ -66,6 +66,7 @@ dependencies {
     compile 'com.aloj.progress:download-progress:1.0'
     compile 'com.facebook.rebound:rebound:0.3.8'
     compile 'com.google.android.gms:play-services-location:10.2.4'
-
+    compile 'com.github.angads25:filepicker:1.1.1'
+    compile group: 'commons-io', name: 'commons-io', version: '2.5'
 }
 apply plugin: 'com.google.gms.google-services'
