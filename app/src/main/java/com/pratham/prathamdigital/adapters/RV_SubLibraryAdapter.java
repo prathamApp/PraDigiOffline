@@ -91,8 +91,9 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
                 DocumentFile tmp1 = tmp.findFile("app_PrathamImages");
 //                        DocumentFile tmp2 = tmp1.findFile(subContents.get(position).getResourcepath());
                 path = SDCardUtil.getRealPathFromURI(context, tmp1.getUri());
-
-
+                if (path == null) {
+                    path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), context) + "/PraDigi/app_PrathamImages";
+                }
             } else {
                 // SD Card Not Available
                 path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";;

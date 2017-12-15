@@ -826,8 +826,6 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         //registering popup with OnMenuItemClickListener
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
-                // ToDo on Import button Clicked
-
                 // Check extSDCard present or not
                 if (hasRealRemovableSdCard(Activity_Main.this)) {
                     // SD Card Available
@@ -1159,12 +1157,12 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                             DocumentFile tmp1 = tmp.findFile("app_PrathamPdf");
 //                        DocumentFile tmp2 = tmp1.findFile(subContents.get(position).getResourcepath());
                             path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
-
-
+                            if (path == null) {
+                                path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), Activity_Main.this) + "/PraDigi/app_PrathamPdf";
+                            }
                         } else {
                             // SD Card Not Available
                             path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamPdf";
-                            ;
                         }
 
 //                        // OLD CODE
@@ -1251,7 +1249,9 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                 DocumentFile tmp = pickedDir.findFile("PraDigi");
                 DocumentFile tmp1 = tmp.findFile("app_PrathamGame");
                 path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
-
+                if (path == null) {
+                    path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), Activity_Main.this) + "/PraDigi/app_PrathamGame";
+                }
             } else {
                 // SD Card Not Available
                 path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
@@ -1393,8 +1393,9 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                     DocumentFile tmp1 = tmp.findFile("app_PrathamGame");
 //                        DocumentFile tmp2 = tmp1.findFile(subContents.get(position).getResourcepath());
                     path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
-
-
+                    if (path == null) {
+                        path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), Activity_Main.this) + "/PraDigi/app_PrathamGame";
+                    }
                 } else {
                     // SD Card Not Available
                     path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";

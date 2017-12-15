@@ -72,6 +72,9 @@ public class CopyFiles extends AsyncTask<Void, Integer, String> {
             DocumentFile tmp2 = tmp1.findFile("PrathamDB");
 
             path = SDCardUtil.getRealPathFromURI(context, tmp2.getUri());
+            if (path == null) {
+                path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), context) + "/PraDigi/databases/PrathamDB";
+            }
         } else {
             // SD Card Not Available
             path = Environment.getExternalStorageDirectory() + "/PraDigi/databases/PrathamDB";
