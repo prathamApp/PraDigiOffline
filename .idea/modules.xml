@@ -3,9 +3,8 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PraDigiOffline.iml" filepath="$PROJECT_DIR$/PraDigiOffline.iml" />
-      <module fileurl="file://D:\MayurWorkspace\Pradigi ( OFFLINE )\PraDigiOffline\PrathamDigital.iml" filepath="D:\MayurWorkspace\Pradigi ( OFFLINE )\PraDigiOffline\PrathamDigital.iml" />
+      <module fileurl="file://E:\AndroidWorkspace\PrathamProjects\PraDigiOffline\PrathamDigital.iml" filepath="E:\AndroidWorkspace\PrathamProjects\PraDigiOffline\PrathamDigital.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
-      <module fileurl="file://D:\MayurWorkspace\Pradigi ( OFFLINE )\PraDigiOffline\app\app.iml" filepath="D:\MayurWorkspace\Pradigi ( OFFLINE )\PraDigiOffline\app\app.iml" />
     </modules>
   </component>
 </project>

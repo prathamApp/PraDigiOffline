@@ -80,8 +80,15 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
 
 
             String path = "";
+            // Check folder exists on Internal
+            File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+            if (intPradigi.exists()) {
+                // Data found on Internal Storage
+                path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";
+            }
+
             // Check extSDCard present or not
-            if (hasRealRemovableSdCard(context)) {
+            else if (hasRealRemovableSdCard(context)) {
                 // SD Card Available
                 // SD Card Path
                 String uri = PreferenceManager.getDefaultSharedPreferences(context).getString("URI", "");

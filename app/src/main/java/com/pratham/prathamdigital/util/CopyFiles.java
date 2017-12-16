@@ -11,7 +11,6 @@ import android.preference.PreferenceManager;
 import android.support.v4.provider.DocumentFile;
 import android.util.Log;
 
-import com.pratham.prathamdigital.activities.Activity_Main;
 import com.pratham.prathamdigital.dbclasses.DatabaseHandler;
 import com.pratham.prathamdigital.interfaces.ExtractInterface;
 import com.pratham.prathamdigital.models.Modal_ContentDetail;
@@ -61,8 +60,15 @@ public class CopyFiles extends AsyncTask<Void, Integer, String> {
 
 
         String path = "";
+        // TODO Path Change
+        // Check folder exists on Internal
+        File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+        if (intPradigi.exists()) {
+            // Data found on Internal Storage
+            path = Environment.getExternalStorageDirectory() + "/PraDigi/databases/PrathamDB";
+        }
         // Check extSDCard present or not
-        if (hasRealRemovableSdCard(context)) {
+        else if (hasRealRemovableSdCard(context)) {
             // SD Card Available
             // SD Card Path
             String uri = PreferenceManager.getDefaultSharedPreferences(context).getString("URI", "");
@@ -138,7 +144,7 @@ public class CopyFiles extends AsyncTask<Void, Integer, String> {
             if (dialog != null) {
                 dialog.dismiss();
             }
-           // if(!zipPath.equals(null))
+            // if(!zipPath.equals(null))
             extractInterface.onExtractDone(zipPath);
             //Log.d("ZipPath:::",zipPath);
         } catch (Exception e) {

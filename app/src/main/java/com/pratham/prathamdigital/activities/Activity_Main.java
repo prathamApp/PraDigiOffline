@@ -826,8 +826,15 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         //registering popup with OnMenuItemClickListener
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
+
+                // Check folder exists on Internal
+                File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+                if (intPradigi.exists()) {
+                    // Data found on Internal Storage
+                    intStorageAvailable();
+                }
                 // Check extSDCard present or not
-                if (hasRealRemovableSdCard(Activity_Main.this)) {
+                else if (hasRealRemovableSdCard(Activity_Main.this)) {
                     // SD Card Available
                     extSDCardAvailable();
                     //Toast.makeText(Activity_Main.this, "SD Card Available !!!", Toast.LENGTH_SHORT).show();
@@ -933,6 +940,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 //                    String TargetPath = shareItPath.replace("POSexternal.zip","");
 //        String target = new File(shareItPath).getParent();
 //        Log.d("target::", target);
+
         if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", null) == null
                 && PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", "").equals("")) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
@@ -1058,7 +1066,6 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             try {
                 // check path is correct or not
                 extractToSDCard(path, treeUri);
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -1068,7 +1075,11 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
     // method to copy files to sd card
     private void extractToSDCard(String path, final Uri treeUri) {
         String base_path = FileUtil.getExtSdCardFolder(new File(path), Activity_Main.this);
+        String intpath = Environment.getExternalStorageDirectory() + "/PraDigi";
+
         if (base_path != null && base_path.equalsIgnoreCase(path)) {
+
+            // SD Card Path
             Log.d("Base path :::", base_path);
             Log.d("targetPath :::", path);
             // Path ( Selected )
@@ -1080,6 +1091,10 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 //            new UnZipTask(CrlShareReceiveProfiles.this, shareItPath).execute();
             new CopyFiles(db, shareItPath, Activity_Main.this,
                     Activity_Main.this).execute();
+        }
+        // stored in internal Storage
+        else if (!intpath.equals(null)) {
+            intStorageAvailable();
         } else {
             // Alert Dialog Call itself if wrong path selected
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
@@ -1104,7 +1119,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             alertDialog.setView(view);
             alertDialog.show();
 
-            Toast.makeText(Activity_Main.this, "Please Select SD Card Only !!!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(Activity_Main.this, "Data Not Available !!!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1146,8 +1161,16 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                     if (directory == null || directory.listFiles().length == 0) {
 
                         String path = "";
+                        // Check folder exists on Internal
+                        File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+                        if (intPradigi.exists()) {
+                            // Data found on Internal Storage
+                            path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamPdf";
+
+                        }
+
                         // Check extSDCard present or not
-                        if (hasRealRemovableSdCard(Activity_Main.this)) {
+                        else if (hasRealRemovableSdCard(Activity_Main.this)) {
                             // SD Card Available
                             // SD Card Path
                             String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
@@ -1234,13 +1257,23 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 
     private void openGameInWebView(Modal_ContentDetail contentDetail) {
         Intent intent = new Intent(Activity_Main.this, Activity_WebView.class);
-        //TODO change path
+        //
+        // TODO change path
         File directory = Activity_Main.this.getDir("PrathamGame", Context.MODE_PRIVATE);
         if (directory == null || directory.listFiles().length == 0) {
 
             String path = "";
+
+            // Check folder exists on Internal
+            File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+            if (intPradigi.exists()) {
+                // Data found on Internal Storage
+                path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
+
+            }
+
             // Check extSDCard present or not
-            if (hasRealRemovableSdCard(Activity_Main.this)) {
+            else if (hasRealRemovableSdCard(Activity_Main.this)) {
                 // SD Card Available
                 // SD Card Path
                 String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
@@ -1382,8 +1415,15 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 
 
                 String path = "";
+                // Check folder exists on Internal
+                File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+                if (intPradigi.exists()) {
+                    // Data found on Internal Storage
+                    path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
+
+                }
                 // Check extSDCard present or not
-                if (hasRealRemovableSdCard(Activity_Main.this)) {
+                else if (hasRealRemovableSdCard(Activity_Main.this)) {
                     // SD Card Available
                     // SD Card Path
                     String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
