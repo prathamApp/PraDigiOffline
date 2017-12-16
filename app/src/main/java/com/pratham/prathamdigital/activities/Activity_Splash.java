@@ -3,8 +3,10 @@ package com.pratham.prathamdigital.activities;
 import android.content.Intent;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
@@ -30,8 +32,10 @@ import com.pratham.prathamdigital.interfaces.Interface_Level;
 import com.pratham.prathamdigital.interfaces.VolleyResult_JSON;
 import com.pratham.prathamdigital.models.GoogleCredentials;
 import com.pratham.prathamdigital.util.ActivityManagePermission;
+import com.pratham.prathamdigital.util.FileUtil;
 import com.pratham.prathamdigital.util.PD_Constant;
 import com.pratham.prathamdigital.util.PD_Utility;
+import com.pratham.prathamdigital.util.SDCardUtil;
 
 import org.json.JSONObject;
 import org.jsoup.Jsoup;
@@ -146,7 +150,31 @@ public class Activity_Splash extends ActivityManagePermission implements GoogleA
     @Override
     protected void onResume() {
         super.onResume();
+
+        // Check Data Exists or not
+        //checkPraDigiContent();
+
         checkVersion();
+    }
+
+    private void checkPraDigiContent() {
+        // Check folder exists on Internal
+        File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+
+        // SD Card Location
+        Intent i = new Intent();
+        Uri treeUri = i.getData();
+        String path = SDCardUtil.getFullPathFromTreeUri(treeUri, Activity_Splash.this);
+        String base_path = FileUtil.getExtSdCardFolder(new File(path), Activity_Splash.this);
+        File extPraDigi = new File(base_path + "/PraDigi");
+
+        // Check content available or not
+        if (!intPradigi.exists() || !extPraDigi.exists()) {
+            // Data found on Internal Storage
+            Toast.makeText(this, "PraDigi Content not Found !!!", Toast.LENGTH_SHORT).show();
+            // App Close
+            finish();
+        }
     }
 
     private void insertGoogleData() {
@@ -278,10 +306,10 @@ public class Activity_Splash extends ActivityManagePermission implements GoogleA
 //                    chooseFile();
 //                }
 //            } else {
-                Intent activityChangeIntent = new Intent(Activity_Splash.this, Activity_Main.class);
-                startActivity(activityChangeIntent);
-                overridePendingTransition(R.anim.enter_from_right, R.anim.nothing);
-                finish();
+            Intent activityChangeIntent = new Intent(Activity_Splash.this, Activity_Main.class);
+            startActivity(activityChangeIntent);
+            overridePendingTransition(R.anim.enter_from_right, R.anim.nothing);
+            finish();
             //}
         } else {
             btn_google_login.setVisibility(View.VISIBLE);
@@ -333,10 +361,10 @@ public class Activity_Splash extends ActivityManagePermission implements GoogleA
             File dbf = getDir("new_databases", MODE_PRIVATE);
             Log.d("db_path::", dbf.getAbsolutePath());
             SQLiteDatabase db = SQLiteDatabase.openDatabase
-                    (dbf.getAbsolutePath().replace("app_new_databases","new_databases")
+                    (dbf.getAbsolutePath().replace("app_new_databases", "new_databases")
                             + "/PrathamDB", null, 0);
             SQLiteDatabase myInternalDatabase = gdb.getWritableDatabase();
-            Log.d("sql::","INSERT INTO table_parent_content SELECT * FROM "
+            Log.d("sql::", "INSERT INTO table_parent_content SELECT * FROM "
                     + db.getPath() + ".table_parent_content;");
             myInternalDatabase.execSQL("INSERT INTO table_parent_content SELECT * FROM PrathamDB.table_parent_content");
             Log.d("db_path::", dbf.getAbsolutePath());

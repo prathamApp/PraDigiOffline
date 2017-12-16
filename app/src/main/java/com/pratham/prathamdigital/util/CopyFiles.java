@@ -10,6 +10,7 @@ import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.provider.DocumentFile;
 import android.util.Log;
+import android.widget.Toast;
 
 import com.pratham.prathamdigital.dbclasses.DatabaseHandler;
 import com.pratham.prathamdigital.interfaces.ExtractInterface;
@@ -74,17 +75,24 @@ public class CopyFiles extends AsyncTask<Void, Integer, String> {
             String uri = PreferenceManager.getDefaultSharedPreferences(context).getString("URI", "");
             DocumentFile pickedDir = DocumentFile.fromTreeUri(context, Uri.parse(uri));
             DocumentFile tmp = pickedDir.findFile("PraDigi");
-            DocumentFile tmp1 = tmp.findFile("databases");
-            DocumentFile tmp2 = tmp1.findFile("PrathamDB");
 
-            path = SDCardUtil.getRealPathFromURI(context, tmp2.getUri());
-            if (path == null) {
-                path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), context) + "/PraDigi/databases/PrathamDB";
-            }
+            Log.d("tmp:::", tmp.toString());
+
+                DocumentFile tmp1 = tmp.findFile("databases");
+                DocumentFile tmp2 = tmp1.findFile("PrathamDB");
+
+                path = SDCardUtil.getRealPathFromURI(context, tmp2.getUri());
+                if (path == null) {
+                    path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), context) + "/PraDigi/databases/PrathamDB";
+                }
+
         } else {
-            // SD Card Not Available
-            path = Environment.getExternalStorageDirectory() + "/PraDigi/databases/PrathamDB";
+            // Data found no where
+            Toast.makeText(context, "Sorry !!!\nPraDigi Content not Available !!!", Toast.LENGTH_SHORT).show();
+//            // SD Card Not Available
+//            path = Environment.getExternalStorageDirectory() + "/PraDigi/databases/PrathamDB";
         }
+
 
         Log.d("path::", path);
 //        if (tmp != null) {

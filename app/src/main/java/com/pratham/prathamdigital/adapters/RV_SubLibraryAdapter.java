@@ -102,8 +102,7 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
                     path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), context) + "/PraDigi/app_PrathamImages";
                 }
             } else {
-                // SD Card Not Available
-                path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";;
+                // Data Not Available anywhere
             }
 
             directory = new File(path);

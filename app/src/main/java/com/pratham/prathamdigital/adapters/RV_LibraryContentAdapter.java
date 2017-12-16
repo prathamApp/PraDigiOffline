@@ -82,7 +82,7 @@ public class RV_LibraryContentAdapter extends RecyclerView.Adapter<RV_LibraryCon
                     // Check extSDCard present or not
                     else if (hasRealRemovableSdCard(context)) {
                         // SD Card Available
-                        // SD Card Path
+                        // SD Card P`ath
                         String uri = PreferenceManager.getDefaultSharedPreferences(context).getString("URI", "");
 
                         DocumentFile pickedDir = DocumentFile.fromTreeUri(context, Uri.parse(uri));
@@ -94,8 +94,8 @@ public class RV_LibraryContentAdapter extends RecyclerView.Adapter<RV_LibraryCon
                             path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), context) + "/PraDigi/app_PrathamImages";
                         }
                     } else {
-                        // SD Card Not Available
-                        path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";;
+                        // Data Not Available anywhere
+
                     }
 
 

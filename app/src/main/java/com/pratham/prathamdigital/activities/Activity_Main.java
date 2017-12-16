@@ -837,13 +837,8 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                 else if (hasRealRemovableSdCard(Activity_Main.this)) {
                     // SD Card Available
                     extSDCardAvailable();
-                    //Toast.makeText(Activity_Main.this, "SD Card Available !!!", Toast.LENGTH_SHORT).show();
-                } else {
-                    // SD Card Not Available
-                    intStorageAvailable();
-                    //Toast.makeText(Activity_Main.this, "SD Card Not Available !!!", Toast.LENGTH_SHORT).show();
                 }
-                //   Toast.makeText(Activity_Main.this, "You Clicked : " + item.getTitle(), Toast.LENGTH_SHORT).show();
+
                 return true;
             }
         });
@@ -941,6 +936,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 //        String target = new File(shareItPath).getParent();
 //        Log.d("target::", target);
 
+        // If Shared Pref are empty
         if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", null) == null
                 && PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", "").equals("")) {
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
@@ -972,8 +968,31 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 //                }
 //            }
         } else {
-            new CopyFiles(db, shareItPath, Activity_Main.this,
-                    Activity_Main.this).execute();
+
+            // Ask Dialog even if shared pref available or filled
+            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
+            //  alertDialogBuilder.setMessage("Keep your Tablet Activity_Main charged & Select External SD Card Path !!!");
+            LayoutInflater factory = LayoutInflater.from(Activity_Main.this);
+            final View view = factory.inflate(R.layout.custom_alert_box_sd_card, null);
+            alertDialogBuilder.setView(view);
+            alertDialogBuilder.setPositiveButton("Ok",
+                    new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface arg0, int arg1) {
+                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                            startActivityForResult(intent, SDCardLocationChooser);
+                        }
+                    });
+            AlertDialog alertDialog = alertDialogBuilder.create();
+            alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
+            alertDialog.setTitle("Choose SD card in Root Location");
+            alertDialog.setCanceledOnTouchOutside(false);
+            alertDialog.setView(view);
+            alertDialog.show();
+
+//            new CopyFiles(db, shareItPath, Activity_Main.this,
+//                    Activity_Main.this).execute();
         }
     }
 
@@ -1055,7 +1074,8 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             }
         } else if (requestCode == ACTIVITY_SEARCH) {
             fab_my_library.performClick();
-        } else if (requestCode == SDCardLocationChooser) {
+        }
+        else if (requestCode == SDCardLocationChooser) {
             Uri treeUri = data.getData();
             String path = SDCardUtil.getFullPathFromTreeUri(treeUri, Activity_Main.this);
             Log.d("SDCardPath :::", path);
@@ -1075,26 +1095,27 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
     // method to copy files to sd card
     private void extractToSDCard(String path, final Uri treeUri) {
         String base_path = FileUtil.getExtSdCardFolder(new File(path), Activity_Main.this);
-        String intpath = Environment.getExternalStorageDirectory() + "/PraDigi";
 
         if (base_path != null && base_path.equalsIgnoreCase(path)) {
-
             // SD Card Path
             Log.d("Base path :::", base_path);
             Log.d("targetPath :::", path);
-            // Path ( Selected )
-            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this)
-                    .edit().putString("URI", treeUri.toString()).apply();
-            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this)
-                    .edit().putString("PATH", path).apply();
+
+            File extPraDigi = new File(base_path + "/PraDigi");
+            // Check content available or not
+            if (extPraDigi.exists()) {
+                // Path ( Selected )
+                PreferenceManager.getDefaultSharedPreferences(Activity_Main.this)
+                        .edit().putString("URI", treeUri.toString()).apply();
+                PreferenceManager.getDefaultSharedPreferences(Activity_Main.this)
+                        .edit().putString("PATH", path).apply();
 
 //            new UnZipTask(CrlShareReceiveProfiles.this, shareItPath).execute();
-            new CopyFiles(db, shareItPath, Activity_Main.this,
-                    Activity_Main.this).execute();
-        }
-        // stored in internal Storage
-        else if (!intpath.equals(null)) {
-            intStorageAvailable();
+                new CopyFiles(db, shareItPath, Activity_Main.this,
+                        Activity_Main.this).execute();
+            } else {
+                Toast.makeText(this, "Sorry !!!\nPraDigi Content not Available !!!", Toast.LENGTH_SHORT).show();
+            }
         } else {
             // Alert Dialog Call itself if wrong path selected
             AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
@@ -1119,7 +1140,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             alertDialog.setView(view);
             alertDialog.show();
 
-            Toast.makeText(Activity_Main.this, "Data Not Available !!!", Toast.LENGTH_SHORT).show();
+            Toast.makeText(Activity_Main.this, "Please Select SD Card only !!!", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -1184,8 +1205,8 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                                 path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), Activity_Main.this) + "/PraDigi/app_PrathamPdf";
                             }
                         } else {
-                            // SD Card Not Available
-                            path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamPdf";
+                           // Data Not Available anywhere
+                            finish();
                         }
 
 //                        // OLD CODE
@@ -1286,9 +1307,8 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                     path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), Activity_Main.this) + "/PraDigi/app_PrathamGame";
                 }
             } else {
-                // SD Card Not Available
-                path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
-                ;
+                // Data Not Available anywhere
+                finish();
             }
 
 
@@ -1437,9 +1457,8 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                         path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), Activity_Main.this) + "/PraDigi/app_PrathamGame";
                     }
                 } else {
-                    // SD Card Not Available
-                    path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
-                    ;
+                    // Data Not Available anywhere
+                    finish();
                 }
 
 
