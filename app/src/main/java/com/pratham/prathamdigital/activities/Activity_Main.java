@@ -584,10 +584,10 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         }
         new MaterialTapTargetPrompt.Builder(Activity_Main.this)
                 .setTarget(findViewById(id))
-                .setPrimaryText(text)
                 .setPrimaryTextTypeface(PD_Utility.getFont(Activity_Main.this))
-                .setSecondaryText(content_text)
+                .setPrimaryText(text)
                 .setSecondaryTextTypeface(PD_Utility.getFont(Activity_Main.this))
+                .setSecondaryText(content_text)
                 .setAnimationInterpolator(new FastOutSlowInInterpolator())
                 .setBackButtonDismissEnabled(false)
                 .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
@@ -809,9 +809,9 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             db.SetIntroFlagTrue(1, googleId);
         }
         isLibrary = true;
+        PD_Utility.setFont(Activity_Main.this, txt_title);
         txt_title.setAlpha(0f);
         txt_title.setText(getResources().getString(R.string.my_library));
-        PD_Utility.setFont(Activity_Main.this, txt_title);
         txt_title.animate().alpha(1f).setStartDelay(100).setDuration(500).setInterpolator(new FastOutSlowInInterpolator());
         initializeGalleryAdapater(isLibrary);
     }
@@ -1074,8 +1074,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             }
         } else if (requestCode == ACTIVITY_SEARCH) {
             fab_my_library.performClick();
-        }
-        else if (requestCode == SDCardLocationChooser) {
+        } else if (requestCode == SDCardLocationChooser) {
             Uri treeUri = data.getData();
             String path = SDCardUtil.getFullPathFromTreeUri(treeUri, Activity_Main.this);
             Log.d("SDCardPath :::", path);
@@ -1205,7 +1204,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
                                 path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), Activity_Main.this) + "/PraDigi/app_PrathamPdf";
                             }
                         } else {
-                           // Data Not Available anywhere
+                            // Data Not Available anywhere
                             finish();
                         }
 
