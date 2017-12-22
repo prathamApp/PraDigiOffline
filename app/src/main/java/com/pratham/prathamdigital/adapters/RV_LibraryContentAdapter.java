@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.pratham.prathamdigital.R;
 import com.pratham.prathamdigital.interfaces.MainActivityAdapterListeners;
 import com.pratham.prathamdigital.models.Modal_ContentDetail;
+import com.pratham.prathamdigital.util.PD_Utility;
 import com.pratham.prathamdigital.util.SDCardUtil;
 
 import java.io.File;
@@ -61,6 +62,9 @@ public class RV_LibraryContentAdapter extends RecyclerView.Adapter<RV_LibraryCon
     public void onBindViewHolder(final ViewHolder holder, final int position) {
         try {
             if (downloadContents.size() > 0) {
+                // TODO font set
+                PD_Utility.setFont(context, holder.l_c_age);
+
                 holder.l_c_age.setText(downloadContents.get(position).getNodetitle());
                 String fileName = downloadContents.get(position).getNodeserverimage()
                         .substring(downloadContents.get(position).getNodeserverimage().lastIndexOf('/') + 1);
@@ -76,7 +80,8 @@ public class RV_LibraryContentAdapter extends RecyclerView.Adapter<RV_LibraryCon
                     File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
                     if (intPradigi.exists()) {
                         // Data found on Internal Storage
-                        path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";;
+                        path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";
+                        ;
 
                     }
                     // Check extSDCard present or not

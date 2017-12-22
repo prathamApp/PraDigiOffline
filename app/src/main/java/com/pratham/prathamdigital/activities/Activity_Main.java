@@ -648,6 +648,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             gallery_rv.setVisibility(View.VISIBLE);
             rl_no_data.setVisibility(View.GONE);
             age = getResources().getStringArray(R.array.main_contents);
+            //age = getResources().getStringArray(R.array.main_contents);
             ageFilterAdapter = new RV_AgeFilterAdapter(this, this, age, childs);
             gallery_rv.setAdapter(ageFilterAdapter);
         }
@@ -809,6 +810,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
             db.SetIntroFlagTrue(1, googleId);
         }
         isLibrary = true;
+        // Main Content ListView Title
         PD_Utility.setFont(Activity_Main.this, txt_title);
         txt_title.setAlpha(0f);
         txt_title.setText(getResources().getString(R.string.my_library));

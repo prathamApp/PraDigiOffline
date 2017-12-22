@@ -48,9 +48,9 @@ public class RV_AgeFilterAdapter extends RecyclerView.Adapter<RV_AgeFilterAdapte
 
     @Override
     public void onBindViewHolder(ViewHolder holder, final int position) {
+        PD_Utility.setFont(context, holder.c_age);
         holder.c_age.setText(age[position]);
         holder.child_avatar.setImageResource(childs[position]);
-        PD_Utility.setFont(context, holder.c_age);
         holder.card_age.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

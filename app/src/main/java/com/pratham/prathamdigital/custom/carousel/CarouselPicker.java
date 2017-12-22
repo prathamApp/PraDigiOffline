@@ -135,9 +135,9 @@ public class CarouselPicker extends ViewPager {
             } else {
                 if (pickerItem.getText() != null) {
                     iv.setVisibility(GONE);
+                    PD_Utility.setFont(context, tv);
                     tv.setVisibility(VISIBLE);
                     tv.setText(pickerItem.getText());
-                    PD_Utility.setFont(context, tv);
 //                    int textSize = ((TextItem) pickerItem).getTextSize();
 //                    if (textSize != 0) {
 //                        tv.setTextSize(dpToPx(((TextItem) pickerItem).getTextSize()));

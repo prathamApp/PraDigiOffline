@@ -43,8 +43,8 @@ public class RV_LevelAdapter extends RecyclerView.Adapter<RV_LevelAdapter.ViewHo
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
-        holder.l_name.setText(levels.get(holder.getAdapterPosition()).getName());
         PD_Utility.setFont(context, holder.l_name);
+        holder.l_name.setText(levels.get(holder.getAdapterPosition()).getName());
         holder.l_card.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
