@@ -14,6 +14,7 @@ import com.pratham.prathamdigital.R;
 import com.pratham.prathamdigital.custom.custom_fab.FloatingActionButton;
 import com.pratham.prathamdigital.interfaces.MainActivityAdapterListeners;
 import com.pratham.prathamdigital.models.Modal_ContentDetail;
+import com.pratham.prathamdigital.util.PD_Utility;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -50,6 +51,8 @@ public class RV_ContentAdapter extends RecyclerView.Adapter<RV_ContentAdapter.Vi
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
+        //TODO set Font here
+        PD_Utility.setFont(context, holder.c_name);
         holder.c_name.setText(sub_content.get(position).getNodetitle());
         Picasso.with(context).load(sub_content.get(position).getNodeserverimage()).into(holder.item_content_img);
         if (sub_content.get(position).getNodetype().equalsIgnoreCase("Resource")) {
@@ -63,7 +66,7 @@ public class RV_ContentAdapter extends RecyclerView.Adapter<RV_ContentAdapter.Vi
             holder.item_parent.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    browseAdapter_clicks.contentButtonClicked(holder.getAdapterPosition(),null);
+                    browseAdapter_clicks.contentButtonClicked(holder.getAdapterPosition(), null);
                 }
             });
         }

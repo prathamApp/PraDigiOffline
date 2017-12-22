@@ -20,6 +20,7 @@ import android.widget.TextView;
 import com.pratham.prathamdigital.R;
 import com.pratham.prathamdigital.interfaces.MainActivityAdapterListeners;
 import com.pratham.prathamdigital.models.Modal_ContentDetail;
+import com.pratham.prathamdigital.util.PD_Utility;
 import com.pratham.prathamdigital.util.SDCardUtil;
 
 import java.io.File;
@@ -69,6 +70,8 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
+        // TODO set Font here
+        PD_Utility.setFont(context, holder.sub_lib_name);
         holder.sub_lib_name.setText(sub_content.get(holder.getAdapterPosition()).getNodetitle());
         String fileName = sub_content.get(holder.getAdapterPosition()).getNodeserverimage()
                 .substring(sub_content.get(holder.getAdapterPosition()).getNodeserverimage().lastIndexOf('/') + 1);

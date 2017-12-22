@@ -276,6 +276,7 @@ public class PD_Utility {
 
 
     public static void setFont(Context context, TextView view) {
+        // TODO set Font
         Typeface font = null;
         if (db.GetUserLanguage().equalsIgnoreCase("Odiya")) {
             font = Typeface.createFromAsset(context.getAssets(), "fonts/lohit_oriya.ttf");
