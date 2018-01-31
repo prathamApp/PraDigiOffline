@@ -20,8 +20,7 @@
             android:background="@color/charcoal"
             android:orientation="vertical"
             android:paddingLeft="@dimen/size_3"
-            android:paddingRight="@dimen/size_3"
-            >
+            android:paddingRight="@dimen/size_3">
 
             <RelativeLayout
                 android:layout_width="match_parent"
@@ -64,21 +63,19 @@
             <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:visibility="gone"
                 android:layout_weight=".25">
 
                 <com.pratham.prathamdigital.custom.custom_fab.FloatingActionButton
                     android:id="@+id/fab_recom"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:visibility="gone"
                     android:layout_centerInParent="true"
                     android:contentDescription="@string/recommended"
                     app:fab_colorNormal="@color/mustord_yellow"
                     app:fab_colorPressed="@color/black_20"
                     app:fab_colorRipple="@color/charcoal"
                     app:fab_shadowColor="@color/black_20"
-                    app:srcCompat="@drawable/ic_file_download_wrapped" />
+                    app:srcCompat="@drawable/ic_share_wrapped" />
             </RelativeLayout>
 
             <RelativeLayout
