@@ -8,4 +8,11 @@
     <dimen name="size_18sp">18sp</dimen>
     <dimen name="size_25sp">25sp</dimen>
     <dimen name="size_50sp">50sp</dimen>
+
+    <dimen name="actionbar_title_text_size">20sp</dimen>
+    <dimen name="toolbar_title_text_size">18sp</dimen>
+    <dimen name="toolbar_size">50dp</dimen>
+    <dimen name="list_text">16sp</dimen>
+    <dimen name="list_subtext">12sp</dimen>
+    <!--<dimen name="fab_margin">16dp</dimen>-->
 </resources>

@@ -1045,6 +1045,12 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 //        initializeGalleryAdapater(isLibrary);
 //    }
 
+    @OnClick(R.id.fab_share)
+    public void FTPModule() {
+        Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+        startActivity(i);
+    }
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);

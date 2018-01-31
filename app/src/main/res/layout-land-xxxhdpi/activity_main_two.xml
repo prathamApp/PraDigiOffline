@@ -67,7 +67,7 @@
                 android:layout_weight=".25">
 
                 <com.pratham.prathamdigital.custom.custom_fab.FloatingActionButton
-                    android:id="@+id/fab_recom"
+                    android:id="@+id/fab_share"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_centerInParent="true"

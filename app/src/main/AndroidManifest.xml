@@ -9,6 +9,26 @@
         android:smallScreens="true"
         android:xlargeScreens="true" />
 
+    <!-- Permissions -->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.BLUETOOTH" />
+    <uses-permission android:name="android.permission.CHANGE_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
+    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.ACCESS_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
     <uses-permission android:name="android.permission.ACCESS_INTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
@@ -42,6 +62,57 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
         </receiver>
+
+        <activity android:name=".activities.ShowFilesOnDevice"/>
+        <activity
+            android:name=".activities.DashboardActivity"
+            android:screenOrientation="sensorPortrait"
+            android:windowSoftInputMode="stateHidden">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
+
+        <receiver
+            android:name=".ftpSettings.FsNotification"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="mayurmhm.mayur.ftpmodule.FTPSERVER_STARTED" />
+                <action android:name="mayurmhm.mayur.ftpmodule.FTPSERVER_STOPPED" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".ftpSettings.FsService" />
+        <service android:name=".ftpSettings.NsdService" />
+
+        <receiver
+            android:name=".ftpSettings.NsdService$StartStopReceiver"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="mayurmhm.mayur.ftpmodule.FTPSERVER_STARTED" />
+                <action android:name="mayurmhm.mayur.ftpmodule.FTPSERVER_STOPPED" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Don't export this receiver in free, this clashes with paid -->
+        <receiver
+            android:name=".ftpSettings.RequestStartStopReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="mayurmhm.mayur.ftpmodule.ACTION_START_FTPSERVER" />
+                <action android:name="mayurmhm.mayur.ftpmodule.ACTION_STOP_FTPSERVER" />
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".ftpSettings.WifiStateChangeReceiver">
+            <intent-filter>
+                <action android:name="android.net.wifi.STATE_CHANGE" />
+            </intent-filter>
+        </receiver>
+
+        <service android:name=".ftpSettings.WifiStateChangeReceiver$StartServerService" />
+        <service android:name=".ftpSettings.WifiStateChangeReceiver$StopServerService" />
 
         <activity
             android:name=".activities.Activity_Splash"

@@ -2,10 +2,15 @@ package com.pratham.prathamdigital;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.pm.PackageManager;
 import android.support.multidex.MultiDex;
 import android.support.v7.app.AppCompatDelegate;
 
 import com.pratham.prathamdigital.util.ConnectivityReceiver;
+
+import net.vrallev.android.cat.Cat;
+
+import org.apache.commons.net.ftp.FTPClient;
 
 import java.util.UUID;
 
@@ -15,9 +20,22 @@ import java.util.UUID;
 
 public class PrathamApplication extends Application {
     private static PrathamApplication mInstance;
+    public static FTPClient client1;
 
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
+    }
+
+    public static String getVersion() {
+        Context context = getAppContext();
+        String packageName = context.getPackageName();
+        try {
+            PackageManager pm = context.getPackageManager();
+            return pm.getPackageInfo(packageName, 0).versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            Cat.e("Unable to find the name " + packageName + " in the package");
+            return null;
+        }
     }
 
 
@@ -27,6 +45,12 @@ public class PrathamApplication extends Application {
 
         mInstance = this;
     }
+
+
+    public static Context getAppContext() {
+        return mInstance.getApplicationContext();
+    }
+
 
     @Override
     protected void attachBaseContext(Context base) {

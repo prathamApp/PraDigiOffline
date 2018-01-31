@@ -36,6 +36,13 @@ android {
     dexOptions {
         javaMaxHeapSize "4g"
     }
+    dataBinding {
+        enabled = true
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
 }
 
 dependencies {
@@ -67,6 +74,15 @@ dependencies {
     compile 'com.facebook.rebound:rebound:0.3.8'
     compile 'com.google.android.gms:play-services-location:10.2.4'
     compile 'com.github.angads25:filepicker:1.1.1'
-    compile group: 'commons-io', name: 'commons-io', version: '2.5'
+    compile 'commons-io:commons-io:2.5'
+    implementation 'net.vrallev.android:cat:1.0.5'
+    implementation 'com.android.support:design:26.+'
+    annotationProcessor 'org.projectlombok:lombok:1.16.12'
+    implementation files('libs/commons-net-3.6.jar')
+    implementation files('libs/commons-net-3.6-sources.jar')
+    implementation files('libs/ftp4j-1.7.2.jar')
+    provided 'org.projectlombok:lombok:1.16.12'
+    implementation 'com.android.support:multidex:1.0.1'
+
 }
 apply plugin: 'com.google.gms.google-services'
