@@ -42,6 +42,7 @@
                 android:textStyle="bold" />
 
             <RelativeLayout
+                android:id="@+id/rl_download"
                 android:layout_width="100dp"
                 android:layout_weight="1"
                 android:background="@color/colorPrimary"

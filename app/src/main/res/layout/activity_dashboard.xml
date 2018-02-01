@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".DashboardActivity">
+    tools:context=".activities.DashboardActivity">
 
     <!--Root Layout-->
     <LinearLayout
@@ -19,7 +19,7 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="32dp"
             android:layout_marginTop="32dp"
-            android:text="FTP Module"
+            android:text="Sharing via FTP"
             android:textColor="@color/colorAccent"
             android:textSize="32sp"
             android:textStyle="bold" />
@@ -45,7 +45,7 @@
             android:layout_marginRight="16dp"
             android:background="#E0E0E0"
             android:padding="16dp"
-            android:text="   Network SSID : PrathamHotSpot\n   Login : ftp\n   Pass : ftp\n   Anonymous : On"
+            android:text="   Network SSID : PrathamHotSpot\n   Login : ftp\n   Pass : ftp"
             android:textAllCaps="false"
             android:textColor="#424242"
             android:textStyle="normal" />
@@ -62,7 +62,7 @@
             android:textSize="20sp"
             android:textStyle="bold" />
 
-        <EditText
+        <!--<EditText
             android:id="@+id/edt_Servername"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -73,7 +73,7 @@
             android:singleLine="true"
             android:textColor="@color/text"
             android:textSize="16sp"
-            android:textStyle="normal" />
+            android:textStyle="normal" />-->
 
         <EditText
             android:id="@+id/edt_HostName"
@@ -132,7 +132,7 @@
             android:textSize="16sp"
             android:textStyle="normal" />
 
-        <Switch
+        <!--<Switch
             android:id="@+id/sw_AnonymousConnection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -142,16 +142,17 @@
             android:checked="false"
             android:text="Anonymous Connection"
             android:textColor="#424242"
-            android:textSize="16sp" />
+            android:textSize="16sp" />-->
 
         <Button
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:layout_marginLeft="16dp"
+            android:visibility="gone"
             android:layout_marginRight="16dp"
             android:onClick="chooseSDCard"
-            android:text="Choose SD Card"
+            android:text="Choose Path"
             android:textAllCaps="false"
             android:textColor="@color/colorPrimary"
             android:textSize="18sp"

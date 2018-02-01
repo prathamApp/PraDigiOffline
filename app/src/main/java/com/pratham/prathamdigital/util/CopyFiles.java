@@ -75,16 +75,19 @@ public class CopyFiles extends AsyncTask<Void, Integer, String> {
             String uri = PreferenceManager.getDefaultSharedPreferences(context).getString("URI", "");
             DocumentFile pickedDir = DocumentFile.fromTreeUri(context, Uri.parse(uri));
             DocumentFile tmp = pickedDir.findFile("PraDigi");
-
-            Log.d("tmp:::", tmp.toString());
-
+            if (tmp != null) {
+                Log.d("tmp:::", tmp.toString());
                 DocumentFile tmp1 = tmp.findFile("databases");
-                DocumentFile tmp2 = tmp1.findFile("PrathamDB");
-
-                path = SDCardUtil.getRealPathFromURI(context, tmp2.getUri());
-                if (path == null) {
-                    path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), context) + "/PraDigi/databases/PrathamDB";
+                if (tmp1 != null) {
+                    DocumentFile tmp2 = tmp1.findFile("PrathamDB");
+                    if (tmp2 != null) {
+                        path = SDCardUtil.getRealPathFromURI(context, tmp2.getUri());
+                        if (path == null) {
+                            path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), context) + "/PraDigi/databases/PrathamDB";
+                        }
+                    }
                 }
+            }
 
         } else {
             // Data found no where

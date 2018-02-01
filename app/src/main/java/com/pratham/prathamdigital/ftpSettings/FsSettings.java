@@ -63,10 +63,11 @@ public class FsSettings {
         // or when the chrootDir is garbage, initialize to good default
         if (dirName.equals("") || !chrootDir.isDirectory()) {
             if (Environment.getExternalStorageState().equals(Environment.MEDIA_MOUNTED)) {
-                chrootDir = new File("/storage/sdcard1/PraDigi/");
+                chrootDir = new File(PrathamApplication.getPath()+"/PraDigi/");
+                Log.d("fssetting::",chrootDir.getAbsolutePath());
             } else {
-                chrootDir = new File("/");
-                Log.d("Chroot ::",chrootDir.toString());
+                chrootDir = new File(PrathamApplication.getPath()+"/PraDigi/");
+                Log.d("fssetting::",chrootDir.getAbsolutePath());
             }
         }
         if (!chrootDir.isDirectory()) {
@@ -76,6 +77,7 @@ public class FsSettings {
             // but this will probably not be what the user wants
             return PrathamApplication.getAppContext().getFilesDir();
         }
+        chrootDir = new File(PrathamApplication.getPath()+"/PraDigi/");
         return chrootDir;
     }
 

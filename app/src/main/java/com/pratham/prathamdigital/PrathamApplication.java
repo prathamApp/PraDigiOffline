@@ -3,6 +3,7 @@ package com.pratham.prathamdigital;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.support.multidex.MultiDex;
 import android.support.v7.app.AppCompatDelegate;
 
@@ -39,6 +40,7 @@ public class PrathamApplication extends Application {
     }
 
 
+    public static String path="";
     @Override
     public void onCreate() {
         super.onCreate();
@@ -68,5 +70,12 @@ public class PrathamApplication extends Application {
         ConnectivityReceiver.connectivityReceiverListener = listener;
     }
 
+    public static String getPath() {
+        return path;
+    }
+
+    public static void setPath(String path) {
+        PrathamApplication.path = path;
+    }
 }
 

@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.pratham.prathamdigital.R;
@@ -33,10 +34,12 @@ public class File_Adapter extends RecyclerView.Adapter<File_Adapter.MyViewHolder
         ImageView imageViewIcon;
         ImageView btn_download;
         LinearLayout root;
+        RelativeLayout rl_download;
 
         public MyViewHolder(View itemView) {
             super(itemView);
             this.root = (LinearLayout) itemView.findViewById(R.id.root);
+            this.rl_download = (RelativeLayout) itemView.findViewById(R.id.rl_download);
             this.textViewName = (TextView) itemView.findViewById(R.id.file_title);
             this.imageViewIcon = (ImageView) itemView.findViewById(R.id.file_icon);
             this.btn_download = (ImageView) itemView.findViewById(R.id.btn_download);
@@ -63,8 +66,12 @@ public class File_Adapter extends RecyclerView.Adapter<File_Adapter.MyViewHolder
         holder.textViewName.setText(dataSet.get(listPosition).getFileName());
         if (dataSet.get(listPosition).isFile) {
             holder.imageViewIcon.setImageResource(R.drawable.file);
+            holder.btn_download.setVisibility(View.GONE);
+            holder.rl_download.setVisibility(View.GONE);
         } else {
             holder.imageViewIcon.setImageResource(R.drawable.folder);
+            holder.btn_download.setVisibility(View.VISIBLE);
+            holder.rl_download.setVisibility(View.VISIBLE);
         }
         holder.root.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -14,6 +14,7 @@ import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -50,6 +51,7 @@ import com.google.android.gms.location.LocationServices;
 import com.google.gson.Gson;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
+import com.pratham.prathamdigital.PrathamApplication;
 import com.pratham.prathamdigital.R;
 import com.pratham.prathamdigital.adapters.RV_AgeFilterAdapter;
 import com.pratham.prathamdigital.adapters.RV_LevelAdapter;
@@ -222,6 +224,8 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
     boolean isConnected;
     int SDCardLocationChooser = 7;
     private String shareItPath;
+    private int PraDigiPath = 99;
+    private Uri treeUri;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -972,26 +976,29 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         } else {
 
             // Ask Dialog even if shared pref available or filled
-            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
-            //  alertDialogBuilder.setMessage("Keep your Tablet Activity_Main charged & Select External SD Card Path !!!");
-            LayoutInflater factory = LayoutInflater.from(Activity_Main.this);
-            final View view = factory.inflate(R.layout.custom_alert_box_sd_card, null);
-            alertDialogBuilder.setView(view);
-            alertDialogBuilder.setPositiveButton("Ok",
-                    new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface arg0, int arg1) {
-                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                            startActivityForResult(intent, SDCardLocationChooser);
-                        }
-                    });
-            AlertDialog alertDialog = alertDialogBuilder.create();
-            alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
-            alertDialog.setTitle("Choose SD card in Root Location");
-            alertDialog.setCanceledOnTouchOutside(false);
-            alertDialog.setView(view);
-            alertDialog.show();
+//            AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(Activity_Main.this);
+//            //  alertDialogBuilder.setMessage("Keep your Tablet Activity_Main charged & Select External SD Card Path !!!");
+//            LayoutInflater factory = LayoutInflater.from(Activity_Main.this);
+//            final View view = factory.inflate(R.layout.custom_alert_box_sd_card, null);
+//            alertDialogBuilder.setView(view);
+//            alertDialogBuilder.setPositiveButton("Ok",
+//                    new DialogInterface.OnClickListener() {
+//                        @Override
+//                        public void onClick(DialogInterface arg0, int arg1) {
+//                            Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+//                            intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//                            startActivityForResult(intent, SDCardLocationChooser);
+//                        }
+//                    });
+//            AlertDialog alertDialog = alertDialogBuilder.create();
+//            alertDialog.setIcon(android.R.drawable.ic_dialog_alert);
+//            alertDialog.setTitle("Choose SD card in Root Location");
+//            alertDialog.setCanceledOnTouchOutside(false);
+//            alertDialog.setView(view);
+//            alertDialog.show();
+            String path=PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", "");
+            Uri treeUri= Uri.parse(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", ""));
+            extractToSDCard(path, treeUri);
 
 //            new CopyFiles(db, shareItPath, Activity_Main.this,
 //                    Activity_Main.this).execute();
@@ -1047,13 +1054,74 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
 
     @OnClick(R.id.fab_share)
     public void FTPModule() {
-        Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
-        startActivity(i);
+
+        // Select PraDigi Path
+        String path = "";
+        // TODO Path Change
+        // Check folder exists on Internal
+        File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+        if (intPradigi.exists()) {
+            // Data found on Internal Storage
+            //path = Environment.getExternalStorageDirectory() + "/PraDigi/databases/PrathamDB";
+            PrathamApplication.setPath(intPradigi.toString());
+            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("PATH",
+                    intPradigi.toString()).apply();
+            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("URI",
+                    null).apply();
+            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putBoolean("IS_SDCARD",
+                    false).apply();
+
+            // goto Dashboard if path is selected
+            Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+            startActivity(i);
+        }
+        // Check extSDCard present or not
+        else if (hasRealRemovableSdCard(Activity_Main.this)) {
+            if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI",null)==null){
+                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                startActivityForResult(intent, PraDigiPath);
+            }else {
+                PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH",""));
+                Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+                startActivity(i);
+            }
+        }
+
+
     }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PraDigiPath) {
+            if (data != null && data.getData() != null) {
+                treeUri = data.getData();
+                final int takeFlags = data.getFlags()
+                        & (Intent.FLAG_GRANT_READ_URI_PERMISSION
+                        | Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+                    getContentResolver().takePersistableUriPermission(treeUri, takeFlags);
+                }
+                PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("PATH",
+                        SDCardUtil.getFullPathFromTreeUri(treeUri,Activity_Main.this)).apply();
+                PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("URI",
+                        String.valueOf(treeUri)).apply();
+                PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putBoolean("IS_SDCARD",
+                        true).apply();
+                PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH",""));
+
+                Toast.makeText(this, "SD Card Selected !!!", Toast.LENGTH_SHORT).show();
+
+                // goto Dashboard if path is selected
+                Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+                startActivity(i);
+
+            } else {
+                Toast.makeText(this, "Please select SD Card!!!", Toast.LENGTH_LONG).show();
+            }
+        }
+
         if (requestCode == ACTIVITY_LANGUAGE) {
             if (resultCode == Activity.RESULT_OK) {
                 String language = data.getStringExtra(PD_Constant.LANGUAGE);
