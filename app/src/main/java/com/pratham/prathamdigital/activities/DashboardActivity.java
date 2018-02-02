@@ -2,11 +2,14 @@ package com.pratham.prathamdigital.activities;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
@@ -18,6 +21,8 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
@@ -34,7 +39,6 @@ import org.apache.commons.net.ftp.FTPClient;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.List;
 
 //import mayurmhm.mayur.ftpmodule.ftpExplorer.AddFTPServerActivity;
 //import mayurmhm.mayur.ftpmodule.ftpExplorer.MainActivity;
@@ -54,7 +58,10 @@ public class DashboardActivity extends AppCompatActivity {
     LinearLayout linearLayout;
     private Uri treeUri;
     private String networkSSID = "PrathamHotSpot";
-    ProgressDialog pd;
+    public static ProgressDialog pd;
+    LinearLayout shareLayout, receiveLayout;
+    Button shareButton, receiveButton;
+    private boolean connected = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,12 +78,58 @@ public class DashboardActivity extends AppCompatActivity {
         //  sw_AnonymousConnection = (Switch) findViewById(R.id.sw_AnonymousConnection);
         btn_Connect = (Button) findViewById(R.id.btn_Save);
         btn_Reset = (Button) findViewById(R.id.btn_Reset);
-        linearLayout = (LinearLayout) findViewById(R.id.linearLayout);
 
-//        btn_Connect.setVisibility(View.GONE);
-//        btn_Reset.setVisibility(View.GONE);
+        linearLayout = (LinearLayout) findViewById(R.id.linearLayout);
+        shareLayout = (LinearLayout) findViewById(R.id.share);
+        receiveLayout = (LinearLayout) findViewById(R.id.receive);
+
+
+        shareLayout.setVisibility(View.GONE);
+        receiveLayout.setVisibility(View.GONE);
 
         pd = new ProgressDialog(this);
+
+        // Share Receive Dialog
+        Dialog dialog = new Dialog(DashboardActivity.this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.setContentView(R.layout.share_receive_dialog);
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.MATCH_PARENT, WindowManager.LayoutParams.MATCH_PARENT);
+        shareButton = dialog.findViewById(R.id.btn_share);
+        receiveButton = dialog.findViewById(R.id.btn_receive);
+        // Setting Dialog
+        dialog.setCanceledOnTouchOutside(false);
+//        dialog.setCancelable(false);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.WHITE));
+        dialog.show();
+
+        shareButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                shareLayout.setVisibility(View.VISIBLE);
+                receiveLayout.setVisibility(View.GONE);
+                dialog.dismiss();
+            }
+        });
+
+        receiveButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                shareLayout.setVisibility(View.GONE);
+                receiveLayout.setVisibility(View.VISIBLE);
+                dialog.dismiss();
+            }
+        });
+
+        dialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+            @Override
+            public void onCancel(DialogInterface dialog) {
+                // if from activity
+                finish();
+
+            }
+
+        });
+
 
         // Switch Press Action
         sw_FtpServer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -242,9 +295,11 @@ public class DashboardActivity extends AppCompatActivity {
             @Override
             protected void onPreExecute() {
                 super.onPreExecute();
-                pd.setMessage("Connecting ... Please wait !!!");
-                pd.setCanceledOnTouchOutside(false);
-                pd.show();
+                if (pd != null) {
+                    pd.setMessage("Connecting ... Please wait !!!");
+                    pd.setCanceledOnTouchOutside(false);
+                    pd.show();
+                }
             }
 
             @Override
@@ -255,99 +310,130 @@ public class DashboardActivity extends AppCompatActivity {
 
                 if (SSID.equalsIgnoreCase(networkSSID)) {
                     // Connected to PrathamHotspot
+                    connected = true;
                 } else {
+
                     // todo automatically connect to PrathamHotSpot
                     connectToPrathamHotSpot();
-                    // Delay for Network change
-//                    try {
-//                        Thread.sleep(6000);
-//                    } catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
+
+                    String recheckSSID = getWifiName(DashboardActivity.this).replace("\"", "");
+                    if (recheckSSID.equalsIgnoreCase(networkSSID)) {
+                        connected = true;
+                    } else {
+                        if (pd != null)
+                            pd.dismiss();
+
+                        Snackbar snackbar = Snackbar
+                                .make(linearLayout, "Manually connect to PrathamHotspot !!!", Snackbar.LENGTH_INDEFINITE)
+                                .setAction("Ok", new View.OnClickListener() {
+                                    @Override
+                                    public void onClick(View view) {
+
+                                        final Intent intent = new Intent(Intent.ACTION_MAIN, null);
+                                        intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                                        final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.wifi.WifiSettings");
+                                        intent.setComponent(cn);
+                                        intent.setFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                                        startActivity(intent);
+                                    }
+                                });
+
+                        // Changing message text color
+                        snackbar.setActionTextColor(Color.RED);
+
+                        // Changing action button text color
+                        View sbView = snackbar.getView();
+                        TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+                        textView.setTextColor(Color.YELLOW);
+                        snackbar.show();
+                    }
+
                 }
 
+                if (connected) {
+                    // todo Validate fields & if Connected to FTP Server then Open File Explorer if correct
+                    if (edt_HostName.getText().toString().trim().length() > 0
+                            && edt_Port.getText().toString().trim().length() > 0
+                            && edt_Login.getText().toString().trim().length() > 0
+                            && edt_Password.getText().toString().trim().length() > 0) {
 
-                // todo Validate fields & if Connected to FTP Server then Open File Explorer if correct
-//                if (edt_ServerName.getText().toString().trim().length() > 0
-                if (edt_HostName.getText().toString().trim().length() > 0
-                        && edt_Port.getText().toString().trim().length() > 0
-                        && edt_Login.getText().toString().trim().length() > 0
-                        && edt_Password.getText().toString().trim().length() > 0) {
-
-                    // todo if connected to FTP Server
+                        // todo if connected to FTP Server
 //            final FTPClient[] client = new FTPClient[1];
-                    FTPClient client1 = new FTPClient();
-                    new AsyncTask<Void, Void, Void>() {
-                        @Override
-                        protected Void doInBackground(Void... voids) {
-                            try {
-                                client1.connect(edt_HostName.getText().toString(), Integer.parseInt(edt_Port.getText().toString()));
-                                client1.login(edt_Login.getText().toString(), edt_Password.getText().toString());
-                            } catch (Exception e) {
-                                e.printStackTrace();
+                        FTPClient client1 = new FTPClient();
+                        new AsyncTask<Void, Void, Void>() {
+                            @Override
+                            protected Void doInBackground(Void... voids) {
+                                try {
+                                    client1.connect(edt_HostName.getText().toString(), Integer.parseInt(edt_Port.getText().toString()));
+                                    client1.login(edt_Login.getText().toString(), edt_Password.getText().toString());
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                                return null;
                             }
-                            return null;
-                        }
 
-                        @Override
-                        protected void onPostExecute(Void aVoid) {
-                            super.onPostExecute(aVoid);
-                            // todo if connected to ftp server list files
-                            if (client1.isConnected()) {
+                            @Override
+                            protected void onPostExecute(Void aVoid) {
+                                super.onPostExecute(aVoid);
+                                // todo if connected to ftp server list files
+                                if (client1.isConnected()) {
 
-                                pd.dismiss();
+                                    if (pd != null)
+                                        pd.dismiss();
 
-                                Snackbar snackbar = Snackbar.make(linearLayout, "Connected to FTP Server !!!", Snackbar.LENGTH_LONG);
-                                snackbar.show();
+                                    Snackbar snackbar = Snackbar.make(linearLayout, "Connected to FTP Server !!!", Snackbar.LENGTH_LONG);
+                                    snackbar.show();
 
-                                // goto FE Activity
-                                Intent i = new Intent(DashboardActivity.this, ShowFilesOnDevice.class);
-                                PrathamApplication.client1 = client1;
+                                    // goto FE Activity
+                                    Intent i = new Intent(DashboardActivity.this, ShowFilesOnDevice.class);
+                                    PrathamApplication.client1 = client1;
 //                                Bundle bundle = new Bundle();
 //                                bundle.putString("treeUri", String.valueOf(treeUri));
 //                                i.putExtras(bundle);
-                                startActivity(i);
-                            } else {
-                                pd.dismiss();
-                                // custom dialog to manually connect to Pratham Hotspot
+                                    startActivity(i);
+                                } else {
+                                    if (pd != null)
+                                        pd.dismiss();
+                                    // custom dialog to manually connect to Pratham Hotspot
 
-                                Snackbar snackbar = Snackbar
-                                        .make(linearLayout, "Manually connect to PrathamHotspot !!!", Snackbar.LENGTH_INDEFINITE)
-                                        .setAction("Ok", new View.OnClickListener() {
-                                            @Override
-                                            public void onClick(View view) {
+                                    Snackbar snackbar = Snackbar
+                                            .make(linearLayout, "Manually connect to PrathamHotspot !!!", Snackbar.LENGTH_INDEFINITE)
+                                            .setAction("Ok", new View.OnClickListener() {
+                                                @Override
+                                                public void onClick(View view) {
 
-                                                final Intent intent = new Intent(Intent.ACTION_MAIN, null);
-                                                intent.addCategory(Intent.CATEGORY_LAUNCHER);
-                                                final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.wifi.WifiSettings");
-                                                intent.setComponent(cn);
-                                                intent.setFlags(intent.FLAG_ACTIVITY_NEW_TASK);
-                                                startActivity(intent);
-                                            }
-                                        });
+                                                    final Intent intent = new Intent(Intent.ACTION_MAIN, null);
+                                                    intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                                                    final ComponentName cn = new ComponentName("com.android.settings", "com.android.settings.wifi.WifiSettings");
+                                                    intent.setComponent(cn);
+                                                    intent.setFlags(intent.FLAG_ACTIVITY_NEW_TASK);
+                                                    startActivity(intent);
+                                                }
+                                            });
 
-                                // Changing message text color
-                                snackbar.setActionTextColor(Color.RED);
+                                    // Changing message text color
+                                    snackbar.setActionTextColor(Color.RED);
 
-                                // Changing action button text color
-                                View sbView = snackbar.getView();
-                                TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
-                                textView.setTextColor(Color.YELLOW);
-                                snackbar.show();
+                                    // Changing action button text color
+                                    View sbView = snackbar.getView();
+                                    TextView textView = (TextView) sbView.findViewById(android.support.design.R.id.snackbar_text);
+                                    textView.setTextColor(Color.YELLOW);
+                                    snackbar.show();
 
                       /*          // not connected to ftp server
                                 Snackbar snackbar = Snackbar.make(linearLayout, "Please connect to PrathamHotspot Manually !!!", Snackbar.LENGTH_LONG);
                                 snackbar.show();
 */
+                                }
                             }
-                        }
-                    }.execute();
-                } else {
-                    // Details incomplete
-                    Snackbar snackbar = Snackbar.make(linearLayout, "Please fill all fields !!!", Snackbar.LENGTH_SHORT);
-                    snackbar.show();
-                    pd.dismiss();
+                        }.execute();
+                    } else {
+                        // Details incomplete
+                        Snackbar snackbar = Snackbar.make(linearLayout, "Please fill all fields !!!", Snackbar.LENGTH_SHORT);
+                        snackbar.show();
+                        pd.dismiss();
 
+                    }
                 }
                 return null;
             }
@@ -360,41 +446,36 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void connectToPrathamHotSpot() {
 
-        WifiConfiguration wifiConfiguration = new WifiConfiguration();
-        wifiConfiguration.SSID = String.format("\"%s\"", networkSSID);
-        wifiConfiguration.priority = 99999;
-        wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
+        try {
 
-        WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
-        int netId = wifiManager.addNetwork(wifiConfiguration);
+            WifiConfiguration wifiConfiguration = new WifiConfiguration();
+            wifiConfiguration.SSID = String.format("\"%s\"", networkSSID);
+            wifiConfiguration.priority = 99999;
 
-        if (wifiManager.isWifiEnabled()) { //---wifi is turned on---
-            //---disconnect it first---
-            wifiManager.disconnect();
-        } else { //---wifi is turned off---
-            //---turn on wifi---
-            wifiManager.setWifiEnabled(true);
-            wifiManager.disconnect();
-        }
+            WifiManager wifiManager = (WifiManager) getApplicationContext().getSystemService(WIFI_SERVICE);
+            int netId = wifiManager.addNetwork(wifiConfiguration);
 
-        List<WifiConfiguration> list = wifiManager.getConfiguredNetworks();
-        for (WifiConfiguration i : list) {
-            if (i.SSID != null && i.SSID.equals("\"" + networkSSID + "\"")) {
+            if (wifiManager.isWifiEnabled()) { //---wifi is turned on---
+                //---disconnect it first---
                 wifiManager.disconnect();
-                wifiManager.enableNetwork(i.networkId, true);
-                try {
-                    Thread.sleep(6000);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                wifiManager.reconnect();
-
-                break;
+            } else { //---wifi is turned off---
+                //---turn on wifi---
+                wifiManager.setWifiEnabled(true);
+                wifiManager.disconnect();
             }
-        }
-//        wifiManager.enableNetwork(netId, true);
 
-//        wifiManager.reconnect();
+            wifiManager.enableNetwork(netId, true);
+            try {
+                Thread.sleep(2000);
+
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            wifiManager.reconnect();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // Reset Form
@@ -410,7 +491,7 @@ public class DashboardActivity extends AppCompatActivity {
         edt_Login.getText().clear();
         edt_Password.getText().clear();
         //sw_AnonymousConnection.setChecked(false);
-        sw_FtpServer.setChecked(false);
+        //sw_FtpServer.setChecked(false);
     }
 
 }

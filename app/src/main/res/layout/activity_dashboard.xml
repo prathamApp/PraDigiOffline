@@ -24,167 +24,172 @@
             android:textSize="32sp"
             android:textStyle="bold" />
 
-        <!--Self FTP Server-->
-        <TextView
+        <LinearLayout
+            android:id="@+id/share"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:text="Host FTP Server"
-            android:textColor="@color/common_signin_btn_default_background"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="128dp"
+            android:orientation="vertical">
 
-        <Switch
-            android:id="@+id/btn_ftpSettings"
+            <!--Self FTP Server-->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:text="Host FTP Server"
+                android:textColor="@color/common_signin_btn_default_background"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <Switch
+                android:id="@+id/btn_ftpSettings"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="32dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:background="#E0E0E0"
+                android:padding="16dp"
+                android:text="   Network SSID : PrathamHotSpot\n   Login : ftp\n   Pass : ftp"
+                android:textAllCaps="false"
+                android:textColor="#424242"
+                android:textStyle="normal" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/receive"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:background="#E0E0E0"
-            android:padding="16dp"
-            android:text="   Network SSID : PrathamHotSpot\n   Login : ftp\n   Pass : ftp"
-            android:textAllCaps="false"
-            android:textColor="#424242"
-            android:textStyle="normal" />
+            android:layout_height="match_parent"
+            android:layout_marginTop="128dp"
+            android:orientation="vertical">
 
-        <!--Connect to FTP Server-->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:text="Connect to FTP Server"
-            android:textColor="@color/common_signin_btn_default_background"
-            android:textSize="20sp"
-            android:textStyle="bold" />
+            <!--Connect to FTP Server-->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:text="Connect to FTP Server"
+                android:textColor="@color/common_signin_btn_default_background"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-        <!--<EditText
-            android:id="@+id/edt_Servername"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:hint="FTP Server Name (e.g Pratham)"
-            android:singleLine="true"
-            android:textColor="@color/text"
-            android:textSize="16sp"
-            android:textStyle="normal" />-->
+            <!--<EditText
+                android:id="@+id/edt_Servername"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:hint="FTP Server Name (e.g Pratham)"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="normal" />-->
 
-        <EditText
-            android:id="@+id/edt_HostName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:hint="Hostname (e.g. 192.88.0.8)"
-            android:inputType="text"
-            android:singleLine="true"
-            android:textColor="@color/text"
-            android:textSize="16sp"
-            android:textStyle="normal" />
+            <EditText
+                android:id="@+id/edt_HostName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:hint="Hostname (e.g. 192.88.0.8)"
+                android:inputType="text"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="normal" />
 
 
-        <EditText
-            android:id="@+id/edt_Port"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:hint="Port (e.g 2121)"
-            android:inputType="number"
-            android:singleLine="true"
-            android:textColor="@color/text"
-            android:textSize="16sp"
-            android:textStyle="normal" />
+            <EditText
+                android:id="@+id/edt_Port"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:hint="Port (e.g 2121)"
+                android:inputType="number"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="normal" />
 
 
-        <EditText
-            android:id="@+id/edt_Login"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:hint="Login"
-            android:singleLine="true"
-            android:textColor="@color/text"
-            android:textSize="16sp"
-            android:textStyle="normal" />
+            <EditText
+                android:id="@+id/edt_Login"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:hint="Login"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="normal" />
 
 
-        <EditText
-            android:id="@+id/edt_Password"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:hint="Password"
-            android:singleLine="true"
-            android:textColor="@color/text"
-            android:textSize="16sp"
-            android:textStyle="normal" />
+            <EditText
+                android:id="@+id/edt_Password"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:hint="Password"
+                android:singleLine="true"
+                android:textColor="@color/text"
+                android:textSize="16sp"
+                android:textStyle="normal" />
 
-        <!--<Switch
-            android:id="@+id/sw_AnonymousConnection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:checked="false"
-            android:text="Anonymous Connection"
-            android:textColor="#424242"
-            android:textSize="16sp" />-->
+            <!--<Switch
+                android:id="@+id/sw_AnonymousConnection"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:checked="false"
+                android:text="Anonymous Connection"
+                android:textColor="#424242"
+                android:textSize="16sp" />-->
 
-        <Button
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:visibility="gone"
-            android:layout_marginRight="16dp"
-            android:onClick="chooseSDCard"
-            android:text="Choose Path"
-            android:textAllCaps="false"
-            android:textColor="@color/colorPrimary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            <Button
+                android:id="@+id/btn_Save"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:onClick="connect"
+                android:text="Connect"
+                android:textAllCaps="false"
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btn_Save"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:onClick="connect"
-            android:text="Connect"
-            android:textAllCaps="false"
-            android:textColor="@color/colorPrimary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+            <Button
+                android:id="@+id/btn_Reset"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:onClick="resetValues"
+                android:text="Reset"
+                android:textAllCaps="false"
+                android:textColor="@color/colorPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
-        <Button
-            android:id="@+id/btn_Reset"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
-            android:layout_marginLeft="16dp"
-            android:layout_marginRight="16dp"
-            android:onClick="resetValues"
-            android:text="Reset"
-            android:textAllCaps="false"
-            android:textColor="@color/colorPrimary"
-            android:textSize="18sp"
-            android:textStyle="bold" />
+        </LinearLayout>
+
 
     </LinearLayout>
 
