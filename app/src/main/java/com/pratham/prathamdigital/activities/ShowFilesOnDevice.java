@@ -218,7 +218,7 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
                     if (isSdCard)
                         downloadFile(client1, name, finalDocumentFile1);
                     else
-                        downloadFile(client1, name, finalDocumentFile1);
+                        downloadFileToInternal(client1, name, final_file1);
                 }
                 return null;
             }
@@ -358,7 +358,8 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
         } finally {
             //Todo copy json to database
             if (ftpFile.getName().endsWith(".json")) {
-                String path = SDCardUtil.getRealPathFromURI(ShowFilesOnDevice.this, tempFile.getUri());
+                Log.d("json_path:::", tempFile.getUri() + "");
+                String path = SDCardUtil.getRealPathFromURI_API19(ShowFilesOnDevice.this, tempFile.getUri());
                 Log.d("json_path:::", path + "");
                 Log.d("json_path:::", ftpFile.getName() + "");
                 //Todo read json from file

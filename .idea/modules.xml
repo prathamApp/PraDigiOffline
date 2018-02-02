@@ -3,7 +3,9 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/PraDigiOffline.iml" filepath="$PROJECT_DIR$/PraDigiOffline.iml" />
+      <module fileurl="file://G:\PraDigiOffline\PraDigiOffline.iml" filepath="G:\PraDigiOffline\PraDigiOffline.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://G:\PraDigiOffline\app\app.iml" filepath="G:\PraDigiOffline\app\app.iml" />
     </modules>
   </component>
 </project>
