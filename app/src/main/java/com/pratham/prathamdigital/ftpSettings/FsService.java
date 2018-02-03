@@ -51,7 +51,6 @@ import java.util.Collections;
 import java.util.List;
 
 import lombok.val;
-//import mayurmhm.mayur.ftpmodule.AndroidApplication;
 
 public class FsService extends Service implements Runnable {
     private static final String TAG = FsService.class.getSimpleName();

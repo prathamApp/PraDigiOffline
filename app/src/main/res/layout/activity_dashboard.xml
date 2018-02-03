@@ -58,6 +58,18 @@
                 android:textColor="#424242"
                 android:textStyle="normal" />
 
+            <TextView
+                android:id="@+id/tv_note"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:text="Note : If redirected to Settings then\n 1. Click on Set up WLAN hotspot \n 2. Set Network name as PrathamHotSpot \n 3. Set Security as None &amp; Save \n 4. Click on Portable WLAN hotspot"
+                android:textColor="@color/common_signin_btn_default_background"
+                android:textSize="20sp"
+                android:textStyle="normal" />
+
         </LinearLayout>
 
         <LinearLayout

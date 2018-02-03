@@ -16,6 +16,7 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.support.design.widget.Snackbar;
@@ -57,6 +58,7 @@ public class DashboardActivity extends AppCompatActivity {
     Button shareButton, receiveButton;
     private boolean connected = false;
     PowerManager pm;
+    TextView tv_note;
     PowerManager.WakeLock wl;
 
     @Override
@@ -77,6 +79,8 @@ public class DashboardActivity extends AppCompatActivity {
         //  sw_AnonymousConnection = (Switch) findViewById(R.id.sw_AnonymousConnection);
         btn_Connect = (Button) findViewById(R.id.btn_Save);
         btn_Reset = (Button) findViewById(R.id.btn_Reset);
+
+        tv_note = findViewById(R.id.tv_note);
 
         linearLayout = (LinearLayout) findViewById(R.id.linearLayout);
         shareLayout = (LinearLayout) findViewById(R.id.share);
@@ -111,6 +115,15 @@ public class DashboardActivity extends AppCompatActivity {
             public void onClick(View view) {
                 shareLayout.setVisibility(View.VISIBLE);
                 receiveLayout.setVisibility(View.GONE);
+
+                //start server if higher api
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    // Start Server
+                    tv_note.setVisibility(View.VISIBLE);
+                } else {
+                    tv_note.setVisibility(View.GONE);
+                }
+
                 dialog.dismiss();
             }
         });
@@ -139,9 +152,16 @@ public class DashboardActivity extends AppCompatActivity {
         sw_FtpServer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked == true) {
-                    // Start HotSpot
-                    CreateWifiAccessPoint createOne = new CreateWifiAccessPoint();
-                    createOne.execute((Void) null);
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                        // Start HotSpot
+                        CreateWifiAccessPointOnHigherAPI createOneHAPI = new CreateWifiAccessPointOnHigherAPI();
+                        createOneHAPI.execute((Void) null);
+                    } else {
+                        // Start HotSpot
+                        CreateWifiAccessPoint createOne = new CreateWifiAccessPoint();
+                        createOne.execute((Void) null);
+
+                    }
                 } else if (isChecked == false) {
                     // Stop Hotspot
                     turnOnOffHotspot(DashboardActivity.this, false);
@@ -154,6 +174,60 @@ public class DashboardActivity extends AppCompatActivity {
             }
         });
     }
+
+    private class CreateWifiAccessPointOnHigherAPI extends AsyncTask<Void, Void, Boolean> {
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+            pd = new ProgressDialog(DashboardActivity.this);
+            pd.setMessage("Starting Server ... Please wait !!!");
+            pd.setCanceledOnTouchOutside(false);
+            pd.show();
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... params) {
+
+            final Intent intent = new Intent(Intent.ACTION_MAIN, null);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            final ComponentName cn = new ComponentName(
+                    "com.android.settings",
+                    "com.android.settings.TetherSettings");
+            intent.setComponent(cn);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(intent);
+
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+            super.onPostExecute(aBoolean);
+
+            // delay for creating hotspot
+            try {
+                if (pd != null)
+                    pd.dismiss();
+
+                // Snackbar instead of Toast
+                Snackbar snackbar = Snackbar.make(linearLayout, "HotSpot Created !!!", Snackbar.LENGTH_LONG);
+                snackbar.show();
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+
+            // Start Server
+            startServer();
+
+
+            // Snackbar instead of Toast
+            Snackbar snackbar = Snackbar.make(linearLayout, "Server Started !!!", Snackbar.LENGTH_LONG);
+            snackbar.show();
+        }
+    }
+
 
     private class CreateWifiAccessPoint extends AsyncTask<Void, Void, Boolean> {
 
@@ -254,7 +328,7 @@ public class DashboardActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Boolean serviceRunning = checkServiceRunning();
-
+        // check service is running or not
         if (!serviceRunning)
             sw_FtpServer.setChecked(false);
     }
@@ -263,10 +337,15 @@ public class DashboardActivity extends AppCompatActivity {
     public boolean checkServiceRunning() {
         ActivityManager manager = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
         for (ActivityManager.RunningServiceInfo service : manager.getRunningServices(Integer.MAX_VALUE)) {
-            if ("mayurmhm.mayur.ftpmodule.ftpSettings.FsService"
-                    .equals(service.service.getClassName())) {
+            if (service.service.getClassName().contains("ftpSettings.FsService")) {
                 return true;
             }
+
+/*
+            if ("ftpSettings.FsService".contains(service.service.getClassName())) {
+                return true;
+            }
+*/
         }
         return false;
     }
