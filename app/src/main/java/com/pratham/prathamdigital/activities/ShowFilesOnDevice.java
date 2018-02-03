@@ -11,6 +11,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
+import android.view.WindowManager;
 
 import com.google.gson.Gson;
 import com.pratham.prathamdigital.PrathamApplication;
@@ -44,8 +45,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-//import mayurmhm.mayur.ftpmodule.AndroidApplication;
-//import mayurmhm.mayur.ftpmodule.R;
 
 public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick {
 
@@ -72,6 +71,8 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_show_files_on_device);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 
         recyclerView = (RecyclerView) findViewById(R.id.recyclerViewExplorer);
         recyclerView.setHasFixedSize(true);
@@ -358,7 +359,7 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
         } finally {
             //Todo copy json to database
             if (ftpFile.getName().endsWith(".json")) {
-                String path = SDCardUtil.getRealPathFromURI(ShowFilesOnDevice.this, tempFile.getUri());
+                String path = SDCardUtil.getRealPathFromURI_API19(ShowFilesOnDevice.this, tempFile.getUri());
                 Log.d("json_path:::", path + "");
                 Log.d("json_path:::", ftpFile.getName() + "");
                 //Todo read json from file

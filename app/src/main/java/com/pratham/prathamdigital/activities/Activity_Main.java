@@ -112,7 +112,8 @@ import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
  * Created by HP on 17-08-2017.
  */
 
-public class Activity_Main extends ActivityManagePermission implements MainActivityAdapterListeners,
+public class
+Activity_Main extends ActivityManagePermission implements MainActivityAdapterListeners,
         VolleyResult_JSON, Observer, ProgressUpdate, Interface_Level, ConnectionCallbacks,
         OnConnectionFailedListener, LocationListener, ConnectivityReceiver.ConnectivityReceiverListener, ExtractInterface {
 
@@ -1077,6 +1078,7 @@ public class Activity_Main extends ActivityManagePermission implements MainActiv
         }
         // Check extSDCard present or not
         else if (hasRealRemovableSdCard(Activity_Main.this)) {
+            // sd card select
             if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI",null)==null){
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                 intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);

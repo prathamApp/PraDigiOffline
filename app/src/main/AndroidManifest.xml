@@ -63,10 +63,12 @@
             </intent-filter>
         </receiver>
 
-        <activity android:name=".activities.ShowFilesOnDevice"/>
+        <activity
+            android:name=".activities.ShowFilesOnDevice"
+            android:screenOrientation="portrait" />
         <activity
             android:name=".activities.DashboardActivity"
-            android:screenOrientation="sensorPortrait"
+            android:screenOrientation="portrait"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -194,6 +196,7 @@
         <service
             android:name=".activities.Activity_PdfViewer$PdfViewerService"
             android:stopWithTask="false" />
+
         <provider
             android:name="android.support.v4.content.FileProvider"
             android:authorities="${applicationId}.provider"
@@ -201,7 +204,7 @@
             android:grantUriPermissions="true">
             <meta-data
                 android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/provider_paths"/>
+                android:resource="@xml/provider_paths" />
         </provider>
     </application>
 </manifest>

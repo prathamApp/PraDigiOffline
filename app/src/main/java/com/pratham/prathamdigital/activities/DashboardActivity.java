@@ -17,6 +17,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.PowerManager;
 import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -40,13 +41,6 @@ import org.apache.commons.net.ftp.FTPClient;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-//import mayurmhm.mayur.ftpmodule.ftpExplorer.AddFTPServerActivity;
-//import mayurmhm.mayur.ftpmodule.ftpExplorer.MainActivity;
-//import mayurmhm.mayur.ftpmodule.ftpSettings.FsService;
-//import mayurmhm.mayur.ftpmodule.ftpSettings.WifiApControl;
-
-//import org.apache.commons.net.ftp.FTP;
-
 public class DashboardActivity extends AppCompatActivity {
 
     Switch sw_FtpServer;
@@ -62,11 +56,16 @@ public class DashboardActivity extends AppCompatActivity {
     LinearLayout shareLayout, receiveLayout;
     Button shareButton, receiveButton;
     private boolean connected = false;
+    PowerManager pm;
+    PowerManager.WakeLock wl;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
+
+        getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+
 
         // Memory Allocation
         sw_FtpServer = (Switch) findViewById(R.id.btn_ftpSettings);
@@ -86,6 +85,11 @@ public class DashboardActivity extends AppCompatActivity {
 
         shareLayout.setVisibility(View.GONE);
         receiveLayout.setVisibility(View.GONE);
+
+        // Wake lock for disabling sleep
+        pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "My Tag");
+        wl.acquire();
 
         pd = new ProgressDialog(this);
 
@@ -443,6 +447,11 @@ public class DashboardActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    protected void onDestroy() {
+        wl.release();
+        super.onDestroy();
+    }
 
     private void connectToPrathamHotSpot() {
 
@@ -472,7 +481,12 @@ public class DashboardActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
             wifiManager.reconnect();
+            try {
+                Thread.sleep(6000);
 
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
