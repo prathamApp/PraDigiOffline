@@ -61,6 +61,20 @@ public class DashboardActivity extends AppCompatActivity {
     TextView tv_note;
     PowerManager.WakeLock wl;
 
+    public int a;
+    public int b;
+    public String password;
+    public String APname;
+
+    private static int g;
+    private static int h;
+    private static int i;
+    private static int j;
+    private WifiManager wifiManager;
+    private String logTAG;
+    private int wifiState;
+    private boolean o;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,11 +166,15 @@ public class DashboardActivity extends AppCompatActivity {
         sw_FtpServer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 if (isChecked == true) {
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                        // Start HotSpot
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
                         CreateWifiAccessPointOnHigherAPI createOneHAPI = new CreateWifiAccessPointOnHigherAPI();
                         createOneHAPI.execute((Void) null);
-                    } else {
+
+                    } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && Build.VERSION.SDK_INT <= Build.VERSION_CODES.O) {
+                        // Start HotSpot
+                        WifiAPController wifiAPController = new WifiAPController();
+                        wifiAPController.wifiToggle("PrathamHotspot", "", wifiManager, DashboardActivity.this);
+                        } else {
                         // Start HotSpot
                         CreateWifiAccessPoint createOne = new CreateWifiAccessPoint();
                         createOne.execute((Void) null);
