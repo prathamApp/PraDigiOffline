@@ -60,7 +60,6 @@ public class DashboardActivity extends AppCompatActivity {
     PowerManager pm;
     TextView tv_note;
     PowerManager.WakeLock wl;
-
     public int a;
     public int b;
     public String password;
@@ -129,7 +128,6 @@ public class DashboardActivity extends AppCompatActivity {
             public void onClick(View view) {
                 shareLayout.setVisibility(View.VISIBLE);
                 receiveLayout.setVisibility(View.GONE);
-
                 //start server if higher api
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                     // Start Server
@@ -137,7 +135,6 @@ public class DashboardActivity extends AppCompatActivity {
                 } else {
                     tv_note.setVisibility(View.GONE);
                 }
-
                 dialog.dismiss();
             }
         });
@@ -174,7 +171,7 @@ public class DashboardActivity extends AppCompatActivity {
                         // Start HotSpot
                         WifiAPController wifiAPController = new WifiAPController();
                         wifiAPController.wifiToggle("PrathamHotspot", "", wifiManager, DashboardActivity.this);
-                        } else {
+                    } else {
                         // Start HotSpot
                         CreateWifiAccessPoint createOne = new CreateWifiAccessPoint();
                         createOne.execute((Void) null);
@@ -476,7 +473,7 @@ public class DashboardActivity extends AppCompatActivity {
                             @Override
                             protected void onPostExecute(Void aVoid) {
                                 super.onPostExecute(aVoid);
-                                // todo if connected to ftp server list files
+                                // todo if connectexd to ftp server list files
                                 if (client1.isConnected()) {
 
                                     if (pd != null)

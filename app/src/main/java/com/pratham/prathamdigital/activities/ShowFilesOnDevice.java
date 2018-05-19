@@ -146,15 +146,15 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
         if (!isSdCard) {
             String path = PreferenceManager.getDefaultSharedPreferences(ShowFilesOnDevice.this).getString("PATH", "");
             if (name.getName().equalsIgnoreCase("app_PrathamImages")) {
-                File file = new File(path , "/app_PrathamImages");
+                File file = new File(path, "/app_PrathamImages");
                 if (!file.exists())
                     file.mkdir();
-                final_file=file;
+                final_file = file;
             } else {
-                File file = new File(path , "/app_PrathamGame");
+                File file = new File(path, "/app_PrathamGame");
                 if (!file.exists())
                     file.mkdir();
-                File child_file = new File(file,name.getName());
+                File child_file = new File(file, name.getName());
                 if (!child_file.exists())
                     child_file.mkdir();
                 final_file = child_file;
@@ -251,7 +251,7 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
                     }
                     if (aFile.isDirectory()) {
                         // create the directory in saveDir
-                        File file=new File(tempFile.getAbsolutePath(),currentFileName);
+                        File file = new File(tempFile.getAbsolutePath(), currentFileName);
                         if (!file.exists())
                             file.mkdir();
                         tempClient.changeWorkingDirectory(currentFileName);
@@ -272,8 +272,8 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
 
     private void downloadFileToInternal(FTPClient client1, FTPFile aFile, File tempFile) {
         try {
-            tempFile = new File(tempFile,aFile.getName());
-            Log.d("tempFile::",tempFile.getAbsolutePath());
+            tempFile = new File(tempFile, aFile.getName());
+            Log.d("tempFile::", tempFile.getAbsolutePath());
             OutputStream outputStream = ShowFilesOnDevice.this.getContentResolver().openOutputStream(Uri.fromFile(tempFile));
             client1.setFileType(FTP.BINARY_FILE_TYPE);
             client1.retrieveFile(aFile.getName(), outputStream);
