@@ -126,7 +126,6 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
     private static final int ACTIVITY_DOWNLOAD = 2;
     private static final int ACTIVITY_SEARCH = 3;
     private static final int ACTIVITY_PDF = 4;
-    private static final int ACTIVITY_VPLAYER = 5;
     @BindView(R.id.content_rv)
     RecyclerView content_rv;
     @BindView(R.id.gallery_rv)
@@ -219,10 +218,10 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
     private static int FATEST_INTERVAL = 5000; // 5 sec
     private static int DISPLACEMENT = 10; // 10 meters
 
-    SharedPreferences pref;
 
     ArrayList<String> path = new ArrayList<String>();
     boolean isConnected;
+    SharedPreferences pref;
     int SDCardLocationChooser = 7;
     private String shareItPath;
     private int PraDigiPath = 99;
@@ -997,8 +996,8 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 //            alertDialog.setCanceledOnTouchOutside(false);
 //            alertDialog.setView(view);
 //            alertDialog.show();
-            String path=PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", "");
-            Uri treeUri= Uri.parse(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", ""));
+            String path = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", "");
+            Uri treeUri = Uri.parse(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", ""));
             extractToSDCard(path, treeUri);
 
 //            new CopyFiles(db, shareItPath, Activity_Main.this,
@@ -1055,7 +1054,6 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 
     @OnClick(R.id.fab_share)
     public void FTPModule() {
-
         // Select PraDigi Path
         String path = "";
         // TODO Path Change
@@ -1071,7 +1069,6 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     null).apply();
             PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putBoolean("IS_SDCARD",
                     false).apply();
-
             // goto Dashboard if path is selected
             Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
             startActivity(i);
@@ -1079,18 +1076,16 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         // Check extSDCard present or not
         else if (hasRealRemovableSdCard(Activity_Main.this)) {
             // sd card select
-            if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI",null)==null){
+            if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", null) == null) {
                 Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
                 intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
                 startActivityForResult(intent, PraDigiPath);
-            }else {
-                PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH",""));
+            } else {
+                PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", ""));
                 Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
                 startActivity(i);
             }
         }
-
-
     }
 
     @Override
@@ -1106,12 +1101,12 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     getContentResolver().takePersistableUriPermission(treeUri, takeFlags);
                 }
                 PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("PATH",
-                        SDCardUtil.getFullPathFromTreeUri(treeUri,Activity_Main.this)).apply();
+                        SDCardUtil.getFullPathFromTreeUri(treeUri, Activity_Main.this)).apply();
                 PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("URI",
                         String.valueOf(treeUri)).apply();
                 PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putBoolean("IS_SDCARD",
                         true).apply();
-                PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH",""));
+                PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", ""));
 
                 Toast.makeText(this, "SD Card Selected !!!", Toast.LENGTH_SHORT).show();
 
@@ -1307,6 +1302,53 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     rs.gc();
                     rs.freeMemory();
                     startActivityForResult(intent, ACTIVITY_PDF, options.toBundle());
+                }
+                else if (subContents.get(position).getResourcetype().equalsIgnoreCase("Video")) {
+                    Intent intent = new Intent(Activity_Main.this, Activity_GenericVPlayer.class);
+                    //TODO change path
+                    File directory = Activity_Main.this.getDir("PrathamVideo", Context.MODE_PRIVATE);
+                    if (directory == null || directory.listFiles().length == 0) {
+
+                        String path = "";
+                        // Check folder exists on Internal
+                        File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
+                        if (intPradigi.exists()) {
+                            // Data found on Internal Storage
+                            path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamVideo";
+                        }
+
+                        // Check extSDCard present or not
+                        else if (hasRealRemovableSdCard(Activity_Main.this)) {
+                            // SD Card Available
+                            // SD Card Path
+                            String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
+
+                            DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
+                            DocumentFile tmp = pickedDir.findFile("PraDigi");
+                            DocumentFile tmp1 = tmp.findFile("app_PrathamVideo");
+                            path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
+                            if (path == null) {
+                                path = SDCardUtil.getFullPathFromTreeUri(pickedDir.getUri(), Activity_Main.this) + "/PraDigi/app_PrathamVideo";
+                            }
+                        } else {
+                            // Data Not Available anywhere
+                            finish();
+                        }
+
+
+                        directory = new File(path);
+                    }
+                    Log.d("game_filepath:::", directory.getAbsolutePath() + "/" + subContents.get(position).getResourcepath());
+                    intent.putExtra("videoPath", "file:///" + directory.getAbsolutePath() + "/" + subContents.get(position).getResourcepath());
+                    intent.putExtra("videoTitle", subContents.get(position).getNodetitle());
+                    intent.putExtra("resId", subContents.get(position).getResourceid());
+//                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this,
+//                            holder, "transition_video");
+                    Runtime rs = Runtime.getRuntime();
+                    rs.freeMemory();
+                    rs.gc();
+                    rs.freeMemory();
+                    startActivity(intent);
                 }
             } else {
                 ArrayList<Modal_ContentDetail> list = db.Get_Contents(PD_Constant.TABLE_CHILD, subContents.get(position).getNodeid());

@@ -150,8 +150,24 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
                 if (!file.exists())
                     file.mkdir();
                 final_file = file;
-            } else {
+            } else if (name.getName().equalsIgnoreCase("app_PrathamGame")) {
                 File file = new File(path, "/app_PrathamGame");
+                if (!file.exists())
+                    file.mkdir();
+                File child_file = new File(file, name.getName());
+                if (!child_file.exists())
+                    child_file.mkdir();
+                final_file = child_file;
+            } else if (name.getName().equalsIgnoreCase("app_PrathamPdf")) {
+                File file = new File(path, "/app_PrathamPdf");
+                if (!file.exists())
+                    file.mkdir();
+                File child_file = new File(file, name.getName());
+                if (!child_file.exists())
+                    child_file.mkdir();
+                final_file = child_file;
+            } else if (name.getName().equalsIgnoreCase("app_PrathamVideo")) {
+                File file = new File(path, "/app_PrathamVideo");
                 if (!file.exists())
                     file.mkdir();
                 File child_file = new File(file, name.getName());
@@ -161,6 +177,8 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
             }
         } else {
             DocumentFile documentFile = DocumentFile.fromTreeUri(ShowFilesOnDevice.this, Uri.parse(treeUri));
+
+            Log.d("name :::", name.getName());
             if (name.getName().equalsIgnoreCase("app_PrathamImages")) {
                 //check whether root folder "PraDigi" exists or not
                 DocumentFile documentFile1 = documentFile.findFile("PraDigi");
@@ -175,7 +193,33 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
                     documentFile = documentFile.createDirectory("app_PrathamImages");
                 else
                     documentFile = documentFile2;
-            } else {
+            } else if (name.getName().equalsIgnoreCase("app_PrathamPdf")) {
+                DocumentFile documentFile1 = documentFile.findFile("PraDigi");
+                if (documentFile1 == null)
+                    documentFile = documentFile.createDirectory("PraDigi");
+                else
+                    documentFile = documentFile1;
+                //check whether sub folder folder "app_PrathamGame" exists or not
+                DocumentFile documentFile2 = documentFile.findFile("app_PrathamPdf");
+                if (documentFile2 == null)
+                    documentFile = documentFile.createDirectory("app_PrathamPdf");
+                else
+                    documentFile = documentFile2;
+
+            } else if (name.getName().equalsIgnoreCase("app_PrathamVideo")) {
+                DocumentFile documentFile1 = documentFile.findFile("PraDigi");
+                if (documentFile1 == null)
+                    documentFile = documentFile.createDirectory("PraDigi");
+                else
+                    documentFile = documentFile1;
+                //check whether sub folder folder "app_PrathamGame" exists or not
+                DocumentFile documentFile2 = documentFile.findFile("app_PrathamVideo");
+                if (documentFile2 == null)
+                    documentFile = documentFile.createDirectory("app_PrathamVideo");
+                else
+                    documentFile = documentFile2;
+
+            }else {
                 DocumentFile documentFile1 = documentFile.findFile("PraDigi");
                 if (documentFile1 == null)
                     documentFile = documentFile.createDirectory("PraDigi");
@@ -187,6 +231,7 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
                     documentFile = documentFile.createDirectory("app_PrathamGame");
                 else
                     documentFile = documentFile2;
+
                 //check whether downloading file exists or not
                 DocumentFile documentFile3 = documentFile.findFile(name.getName());
                 if (documentFile3 == null)

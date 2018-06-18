@@ -35,7 +35,7 @@ public class Activity_VPlayer extends AppCompatActivity /*implements YoutubePlay
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_vplayer);
         ButterKnife.bind(this);
-        setupEnterTransitions();
+//        setupEnterTransitions();
 //        YTParams params = new YTParams();
 //        params.setPlaybackQuality(PlaybackQuality.medium);
 //        youtubePlayerView.setAutoPlayerHeight(this);

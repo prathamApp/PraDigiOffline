@@ -69,9 +69,16 @@ public class File_Adapter extends RecyclerView.Adapter<File_Adapter.MyViewHolder
             holder.btn_download.setVisibility(View.GONE);
             holder.rl_download.setVisibility(View.GONE);
         } else {
-            holder.imageViewIcon.setImageResource(R.drawable.folder);
-            holder.btn_download.setVisibility(View.VISIBLE);
-            holder.rl_download.setVisibility(View.VISIBLE);
+            if (dataSet.get(listPosition).getFileName().equalsIgnoreCase("app_PrathamGame")) {
+                holder.imageViewIcon.setImageResource(R.drawable.folder);
+                holder.btn_download.setVisibility(View.GONE);
+                holder.rl_download.setVisibility(View.GONE);
+            } else {
+                holder.imageViewIcon.setImageResource(R.drawable.folder);
+                holder.btn_download.setVisibility(View.VISIBLE);
+                holder.rl_download.setVisibility(View.VISIBLE);
+
+            }
         }
         holder.root.setOnClickListener(new View.OnClickListener() {
             @Override
