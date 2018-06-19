@@ -126,12 +126,15 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
     private static final int ACTIVITY_DOWNLOAD = 2;
     private static final int ACTIVITY_SEARCH = 3;
     private static final int ACTIVITY_PDF = 4;
+    private static final int ACTIVITY_DOWNLOAD_METHOD = 5;
     @BindView(R.id.content_rv)
     RecyclerView content_rv;
     @BindView(R.id.gallery_rv)
     RecyclerView gallery_rv;
     @BindView(R.id.c_fab_language)
     FloatingActionButton fab_language;
+    @BindView(R.id.fab_share)
+    FloatingActionButton fab_share;
     @BindView(R.id.c_fab_search)
     FloatingActionButton fab_search; // Import Data
     //    @BindView(R.id.fab_recom)
@@ -649,6 +652,9 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 rl_no_data.setVisibility(View.VISIBLE);
             }
         } else {
+            // todo child & parent logic
+
+
             gallery_rv.setVisibility(View.VISIBLE);
             rl_no_data.setVisibility(View.GONE);
             age = getResources().getStringArray(R.array.main_contents);
@@ -676,69 +682,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                         subLibraryAdapter.updateData(subContents);
                     }
                 } else {
-                    if (PD_Utility.isInternetAvailable(Activity_Main.this)) {
-                        url = PD_Constant.URL.BROWSE_BY_ID.toString();
-                        Modal_Level level = new Modal_Level();
-                        level.setName(age[position]);
-                        if (db.GetUserLanguage().equalsIgnoreCase("english")) {
-                            url += english_age_id[position];
-                            level.setId(english_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("hindi")) {
-                            url += hindi_age_id[position];
-                            level.setId(hindi_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Marathi")) {
-                            url += marathi_age_id[position];
-                            level.setId(marathi_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Kannada")) {
-                            url += kannada_age_id[position];
-                            level.setId(kannada_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Telugu")) {
-                            url += telugu_age_id[position];
-                            level.setId(telugu_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Bengali")) {
-                            url += bengali_age_id[position];
-                            level.setId(bengali_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Gujarati")) {
-                            url += gujarati_age_id[position];
-                            level.setId(gujarati_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Punjabi")) {
-                            url += punjabi_age_id[position];
-                            level.setId(punjabi_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Tamil")) {
-                            url += tamil_age_id[position];
-                            level.setId(tamil_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Odiya")) {
-                            url += odiya_age_id[position];
-                            level.setId(odiya_age_id[position]);
-                        }
-                        if (db.GetUserLanguage().equalsIgnoreCase("Assamese")) {
-                            url += assamese_age_id[position];
-                            level.setId(assamese_age_id[position]);
-                        }
-                        /*
-                        if (db.GetUserLanguage().equalsIgnoreCase("Malayalam"))
-                            url += tamil_age_id[position];
-                            */
-                        setRecyclerLevel(level);
-                        showDialog();
-                        new Handler().postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                new PD_ApiRequest(Activity_Main.this, Activity_Main.this).getDataVolley("BROWSE", url);
-                            }
-                        }, 2000);
-                    } else {
-                        updateInternetConnection();
-                    }
+                    // todo scroll up change for ftp
                 }
             }
         });
@@ -1052,6 +996,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 //        initializeGalleryAdapater(isLibrary);
 //    }
 
+    @SuppressLint("RestrictedApi")
     @OnClick(R.id.fab_share)
     public void FTPModule() {
         // Select PraDigi Path
@@ -1071,7 +1016,9 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     false).apply();
             // goto Dashboard if path is selected
             Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
-            startActivity(i);
+            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
+            startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
+
         }
         // Check extSDCard present or not
         else if (hasRealRemovableSdCard(Activity_Main.this)) {
@@ -1083,11 +1030,45 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             } else {
                 PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", ""));
                 Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
-                startActivity(i);
+                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
+                startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
             }
         }
+
+/*        // Select Download Method
+        final Dialog dialog = new Dialog(this);
+        dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        dialog.setContentView(R.layout.download_method);
+        dialog.getWindow().setLayout(WindowManager.LayoutParams.WRAP_CONTENT, WindowManager.LayoutParams.WRAP_CONTENT);
+        dialog.setCancelable(true);
+        dialog.setCanceledOnTouchOutside(false);
+        dialog.show();
+
+        ImageButton createFTPServer = (ImageButton) dialog.findViewById(R.id.btn_CreateFTPServer);
+        ImageButton connectFTPServer = (ImageButton) dialog.findViewById(R.id.btn_ConnectFTPServer);
+
+        createFTPServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+                i.putExtra("FTPMethod","Create");
+                startActivity(i);
+            }
+        });
+        connectFTPServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+                i.putExtra("FTPMethod","Connect");
+                startActivity(i);
+            }
+        });*/
+
+
     }
 
+    @SuppressLint("RestrictedApi")
     @Override
     protected void onActivityResult(int requestCode, int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -1110,9 +1091,10 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 
                 Toast.makeText(this, "SD Card Selected !!!", Toast.LENGTH_SHORT).show();
 
-                // goto Dashboard if path is selected
+//                // goto Dashboard if path is selected
                 Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
-                startActivity(i);
+                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
+                startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
 
             } else {
                 Toast.makeText(this, "Please select SD Card!!!", Toast.LENGTH_LONG).show();
@@ -1302,8 +1284,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     rs.gc();
                     rs.freeMemory();
                     startActivityForResult(intent, ACTIVITY_PDF, options.toBundle());
-                }
-                else if (subContents.get(position).getResourcetype().equalsIgnoreCase("Video")) {
+                } else if (subContents.get(position).getResourcetype().equalsIgnoreCase("Video")) {
                     Intent intent = new Intent(Activity_Main.this, Activity_GenericVPlayer.class);
                     //TODO change path
                     File directory = Activity_Main.this.getDir("PrathamVideo", Context.MODE_PRIVATE);

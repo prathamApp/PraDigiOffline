@@ -2,14 +2,11 @@ package com.pratham.prathamdigital.activities;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
-import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.net.NetworkInfo;
 import android.net.Uri;
 import android.net.wifi.WifiConfiguration;
@@ -23,11 +20,11 @@ import android.support.design.widget.Snackbar;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.CompoundButton;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -54,7 +51,7 @@ public class DashboardActivity extends AppCompatActivity {
     private Uri treeUri;
     private String networkSSID = "PrathamHotSpot";
     public static ProgressDialog pd;
-    LinearLayout shareLayout, receiveLayout;
+    LinearLayout rootLayout, shareLayout, receiveLayout;
     Button shareButton, receiveButton;
     private boolean connected = false;
     PowerManager pm;
@@ -73,6 +70,8 @@ public class DashboardActivity extends AppCompatActivity {
     private String logTAG;
     private int wifiState;
     private boolean o;
+
+    ImageButton btn_CreateFTPServer, btn_ConnectFTPServer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -95,10 +94,13 @@ public class DashboardActivity extends AppCompatActivity {
 
         tv_note = findViewById(R.id.tv_note);
 
+        rootLayout = (LinearLayout) findViewById(R.id.rootLayout);
         linearLayout = (LinearLayout) findViewById(R.id.linearLayout);
         shareLayout = (LinearLayout) findViewById(R.id.share);
         receiveLayout = (LinearLayout) findViewById(R.id.receive);
 
+        btn_CreateFTPServer = findViewById(R.id.btn_CreateFTPServer);
+        btn_ConnectFTPServer = findViewById(R.id.btn_ConnectFTPServer);
 
         shareLayout.setVisibility(View.GONE);
         receiveLayout.setVisibility(View.GONE);
@@ -110,7 +112,55 @@ public class DashboardActivity extends AppCompatActivity {
 
         pd = new ProgressDialog(this);
 
-        // Share Receive Dialog
+        btn_CreateFTPServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                linearLayout.setVisibility(View.VISIBLE);
+                rootLayout.setVisibility(View.GONE);
+                shareLayout.setVisibility(View.VISIBLE);
+                receiveLayout.setVisibility(View.GONE);
+                //start server if higher api
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                    // Start Server
+                    tv_note.setVisibility(View.VISIBLE);
+                } else {
+                    tv_note.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        btn_ConnectFTPServer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                linearLayout.setVisibility(View.VISIBLE);
+                rootLayout.setVisibility(View.GONE);
+                shareLayout.setVisibility(View.GONE);
+                receiveLayout.setVisibility(View.VISIBLE);
+            }
+        });
+
+/*
+        // Get FTP Connect Method
+        Intent iFTP = getIntent();
+        String ftpMethod = iFTP.getStringExtra("FTPMethod");
+
+        if (ftpMethod.equalsIgnoreCase("Create")) {
+            shareLayout.setVisibility(View.VISIBLE);
+            receiveLayout.setVisibility(View.GONE);
+            //start server if higher api
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+                // Start Server
+                tv_note.setVisibility(View.VISIBLE);
+            } else {
+                tv_note.setVisibility(View.GONE);
+            }
+        } else if (ftpMethod.equalsIgnoreCase("Connect")) {
+            shareLayout.setVisibility(View.GONE);
+            receiveLayout.setVisibility(View.VISIBLE);
+        }
+*/
+
+        /*// Share Receive Dialog
         Dialog dialog = new Dialog(DashboardActivity.this);
         dialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
         dialog.setContentView(R.layout.share_receive_dialog);
@@ -156,7 +206,7 @@ public class DashboardActivity extends AppCompatActivity {
 
             }
 
-        });
+        });*/
 
 
         // Switch Press Action
@@ -188,6 +238,18 @@ public class DashboardActivity extends AppCompatActivity {
                 }
             }
         });
+    }
+
+    @Override
+    public void onBackPressed() {
+        try {
+            //stop FTP Server & HotSpot
+            stopServer();
+            turnOnOffHotspot(this, false);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        super.onBackPressed();
     }
 
     private class CreateWifiAccessPointOnHigherAPI extends AsyncTask<Void, Void, Boolean> {

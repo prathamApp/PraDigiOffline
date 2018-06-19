@@ -1,209 +1,354 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@android:color/transparent"
     android:keepScreenOn="true"
     tools:context=".activities.DashboardActivity">
 
-    <!--Root Layout-->
-    <LinearLayout
-        android:id="@+id/linearLayout"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center_horizontal"
-        android:orientation="vertical">
+    <android.support.v7.widget.CardView
+        android:id="@+id/card_language"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:transitionName="transition_dialog"
+        app:cardBackgroundColor="@color/ghost_white"
+        app:cardUseCompatPadding="true">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="32dp"
-            android:layout_marginTop="32dp"
-            android:text="Sharing via FTP"
-            android:textColor="@color/colorAccent"
-            android:textSize="32sp"
-            android:textStyle="bold" />
-
+        <!--Container-->
         <LinearLayout
-            android:id="@+id/share"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="128dp"
+            android:layout_width="500dp"
+            android:layout_height="350dp"
+            android:gravity="center"
             android:orientation="vertical">
 
-            <!--Self FTP Server-->
-            <TextView
-                android:layout_width="match_parent"
+            <!--Root Layout-->
+            <LinearLayout
+                android:id="@+id/rootLayout"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:text="Host FTP Server"
-                android:textColor="@color/common_signin_btn_default_background"
-                android:textSize="20sp"
-                android:textStyle="bold" />
+                android:layout_gravity="center"
+                android:background="@drawable/custom_border"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="visible">
 
-            <Switch
-                android:id="@+id/btn_ftpSettings"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="32dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:background="#E0E0E0"
-                android:padding="16dp"
-                android:text="   Network SSID : PrathamHotSpot\n   Login : ftp\n   Pass : ftp"
-                android:textAllCaps="false"
-                android:textColor="#424242"
-                android:textStyle="normal" />
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="32dp"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:text="Select Upload/Download Method"
+                    android:textColor="@color/red"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tv_note"
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_margin="32dp"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:weightSum="2">
+
+                    <!--        <FrameLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content">
+
+                                <ImageButton
+                                    android:id="@+id/btn_dwFromServer"
+                                    android:layout_width="86dp"
+                                    android:layout_height="86dp"
+                                    android:layout_marginBottom="32dp"
+                                    android:layout_marginLeft="32dp"
+                                    android:layout_marginRight="32dp"
+                                    android:background="@drawable/ic_download_server" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_gravity="center_horizontal|bottom"
+                                    android:clickable="false"
+                                    android:text="Download over Internet" />
+                            </FrameLayout>-->
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <ImageButton
+                            android:id="@+id/btn_CreateFTPServer"
+                            android:layout_width="86dp"
+                            android:layout_height="86dp"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="32dp"
+                            android:layout_marginLeft="32dp"
+                            android:layout_marginRight="32dp"
+                            android:background="@drawable/ic_create_ftp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal|bottom"
+                            android:clickable="false"
+                            android:text="Create FTP Server" />
+                    </FrameLayout>
+
+                    <FrameLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1">
+
+                        <ImageButton
+                            android:id="@+id/btn_ConnectFTPServer"
+                            android:layout_width="86dp"
+                            android:layout_height="86dp"
+                            android:layout_gravity="center_horizontal"
+                            android:layout_marginBottom="32dp"
+                            android:layout_marginLeft="32dp"
+                            android:layout_marginRight="32dp"
+                            android:background="@drawable/ic_connect_to_ftp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_gravity="center_horizontal|bottom"
+                            android:clickable="false"
+                            android:text="Connect To FTP Server" />
+                    </FrameLayout>
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!--Old Layout-->
+            <LinearLayout
+                android:id="@+id/linearLayout"
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:text="Note : If redirected to Settings then\n 1. Click on Set up WLAN hotspot \n 2. Set Network name as PrathamHotSpot \n 3. Set Security as None &amp; Save \n 4. Click on Portable WLAN hotspot"
-                android:textColor="@color/common_signin_btn_default_background"
-                android:textSize="20sp"
-                android:textStyle="normal" />
+                android:layout_height="match_parent"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:background="@drawable/custom_border"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="16dp"
+                    android:text="Sharing via FTP"
+                    android:textColor="@color/colorAccent"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
+
+                <LinearLayout
+                    android:id="@+id/share"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+
+                    <!--Self FTP Server-->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:text="Host FTP Server"
+                        android:textColor="@color/common_signin_btn_default_background"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <Switch
+                        android:id="@+id/btn_ftpSettings"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:background="#E0E0E0"
+                        android:padding="16dp"
+                        android:text="   Network SSID : PrathamHotSpot\n   Login : ftp\n   Pass : ftp"
+                        android:textAllCaps="false"
+                        android:textColor="#424242"
+                        android:textStyle="normal" />
+
+                    <TextView
+                        android:id="@+id/tv_note"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:text="Note : If redirected to Settings then\n 1. Click on Set up WLAN hotspot \n 2. Set Network name as PrathamHotSpot \n 3. Set Security as None &amp; Save \n 4. Click on Portable WLAN hotspot"
+                        android:textColor="@color/common_signin_btn_default_background"
+                        android:textSize="20sp"
+                        android:textStyle="normal" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/receive"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:orientation="vertical">
+
+                    <!--Connect to FTP Server-->
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:text="Connect to FTP Server"
+                        android:textColor="@color/common_signin_btn_default_background"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <EditText
+                            android:id="@+id/edt_HostName"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginRight="16dp"
+                            android:layout_weight="1"
+                            android:hint="Hostname (e.g. 192.88.0.8)"
+                            android:text="192.168.43.1"
+                            android:inputType="text"
+                            android:singleLine="true"
+                            android:textColor="@color/text"
+                            android:textSize="16sp"
+                            android:textStyle="normal" />
+
+
+                        <EditText
+                            android:id="@+id/edt_Port"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginRight="16dp"
+                            android:layout_weight="1"
+                            android:text="2121"
+                            android:hint="Port (e.g 2121)"
+                            android:inputType="number"
+                            android:singleLine="true"
+                            android:textColor="@color/text"
+                            android:textSize="16sp"
+                            android:textStyle="normal" />
+
+
+                    </LinearLayout>
+
+                    <!--<EditText
+                        android:id="@+id/edt_Servername"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:hint="FTP Server Name (e.g Pratham)"
+                        android:singleLine="true"
+                        android:textColor="@color/text"
+                        android:textSize="16sp"
+                        android:textStyle="normal" />-->
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="2">
+
+                        <EditText
+                            android:id="@+id/edt_Login"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:text="ftp"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginRight="16dp"
+                            android:layout_weight="1"
+                            android:hint="Login"
+                            android:singleLine="true"
+                            android:textColor="@color/text"
+                            android:textSize="16sp"
+                            android:textStyle="normal" />
+
+
+                        <EditText
+                            android:id="@+id/edt_Password"
+                            android:layout_width="match_parent"
+                            android:text="ftp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="8dp"
+                            android:layout_marginLeft="16dp"
+                            android:layout_marginRight="16dp"
+                            android:layout_weight="1"
+                            android:hint="Password"
+                            android:singleLine="true"
+                            android:textColor="@color/text"
+                            android:textSize="16sp"
+                            android:textStyle="normal" />
+
+                    </LinearLayout>
+
+
+                    <!--<Switch
+                        android:id="@+id/sw_AnonymousConnection"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:checked="false"
+                        android:text="Anonymous Connection"
+                        android:textColor="#424242"
+                        android:textSize="16sp" />-->
+
+                    <Button
+                        android:id="@+id/btn_Save"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="16dp"
+                        android:onClick="connect"
+                        android:text="Connect"
+                        android:textAllCaps="false"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <Button
+                        android:id="@+id/btn_Reset"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:layout_marginLeft="16dp"
+                        android:layout_marginRight="16dp"
+                        android:onClick="resetValues"
+                        android:text="Reset"
+                        android:textAllCaps="false"
+                        android:textColor="@color/colorPrimary"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
 
         </LinearLayout>
+    </android.support.v7.widget.CardView>
 
-        <LinearLayout
-            android:id="@+id/receive"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="128dp"
-            android:orientation="vertical">
-
-            <!--Connect to FTP Server-->
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="8dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:text="Connect to FTP Server"
-                android:textColor="@color/common_signin_btn_default_background"
-                android:textSize="20sp"
-                android:textStyle="bold" />
-
-            <!--<EditText
-                android:id="@+id/edt_Servername"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:hint="FTP Server Name (e.g Pratham)"
-                android:singleLine="true"
-                android:textColor="@color/text"
-                android:textSize="16sp"
-                android:textStyle="normal" />-->
-
-            <EditText
-                android:id="@+id/edt_HostName"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:hint="Hostname (e.g. 192.88.0.8)"
-                android:inputType="text"
-                android:singleLine="true"
-                android:textColor="@color/text"
-                android:textSize="16sp"
-                android:textStyle="normal" />
-
-
-            <EditText
-                android:id="@+id/edt_Port"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:hint="Port (e.g 2121)"
-                android:inputType="number"
-                android:singleLine="true"
-                android:textColor="@color/text"
-                android:textSize="16sp"
-                android:textStyle="normal" />
-
-
-            <EditText
-                android:id="@+id/edt_Login"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:hint="Login"
-                android:singleLine="true"
-                android:textColor="@color/text"
-                android:textSize="16sp"
-                android:textStyle="normal" />
-
-
-            <EditText
-                android:id="@+id/edt_Password"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:hint="Password"
-                android:singleLine="true"
-                android:textColor="@color/text"
-                android:textSize="16sp"
-                android:textStyle="normal" />
-
-            <!--<Switch
-                android:id="@+id/sw_AnonymousConnection"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:checked="false"
-                android:text="Anonymous Connection"
-                android:textColor="#424242"
-                android:textSize="16sp" />-->
-
-            <Button
-                android:id="@+id/btn_Save"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:onClick="connect"
-                android:text="Connect"
-                android:textAllCaps="false"
-                android:textColor="@color/colorPrimary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-            <Button
-                android:id="@+id/btn_Reset"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
-                android:onClick="resetValues"
-                android:text="Reset"
-                android:textAllCaps="false"
-                android:textColor="@color/colorPrimary"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-
-        </LinearLayout>
-
-
-    </LinearLayout>
-
-</ScrollView>
+</FrameLayout>

@@ -1,9 +1,11 @@
 package com.pratham.prathamdigital.activities;
 
+import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.preference.PreferenceManager;
 import android.support.v4.provider.DocumentFile;
 import android.support.v7.app.AppCompatActivity;
@@ -30,10 +32,12 @@ import org.apache.commons.net.ftp.FTPFile;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -86,6 +90,15 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
         if (!client1.equals(null)) {
             listFtpFiles(false, null, false);
         }
+
+        // Download Config.json once successfully connected to FTP Server
+        File configJson = new File(Environment.getExternalStorageDirectory() + "/Config.json");
+        try {
+            downloadParticularFile("config.json", configJson);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
     }
 
     private void listFtpFiles(boolean isExpand, String name, boolean changeToParent) {
@@ -219,7 +232,7 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
                 else
                     documentFile = documentFile2;
 
-            }else {
+            } else {
                 DocumentFile documentFile1 = documentFile.findFile("PraDigi");
                 if (documentFile1 == null)
                     documentFile = documentFile.createDirectory("PraDigi");
@@ -313,6 +326,37 @@ public class ShowFilesOnDevice extends AppCompatActivity implements FolderClick 
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    // Download particular file
+    @SuppressLint("StaticFieldLeak")
+    private void downloadParticularFile(String fileName, File localFile) throws IOException {
+        new AsyncTask<Void, Void, Void>() {
+            @Override
+            protected Void doInBackground(Void... voids) {
+                OutputStream outputStream = null;
+                boolean success = false;
+                try {
+                    outputStream = new BufferedOutputStream(new FileOutputStream(localFile));
+                    success = client1.retrieveFile(fileName, outputStream);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                } finally {
+                    if (outputStream != null) {
+                        try {
+                            outputStream.close();
+                            // todo json parsing temp parent temp child in model for gallery adapter
+
+                            // pass adatpter to gallery adapter
+
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+                return null;
+            }
+        }.execute();
     }
 
     private void downloadFileToInternal(FTPClient client1, FTPFile aFile, File tempFile) {

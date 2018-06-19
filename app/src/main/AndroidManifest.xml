@@ -62,10 +62,12 @@
 
         <activity
             android:name=".activities.ShowFilesOnDevice"
-            android:screenOrientation="portrait" />
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/AppTheme.Dialog" />
         <activity
             android:name=".activities.DashboardActivity"
-            android:screenOrientation="portrait"
+            android:screenOrientation="sensorLandscape"
+            android:theme="@style/AppTheme.Dialog"
             android:windowSoftInputMode="stateHidden">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
