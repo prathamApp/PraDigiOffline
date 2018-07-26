@@ -6,7 +6,6 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.PowerManager;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.pratham.prathamdigital.interfaces.Interface_Level;
@@ -33,7 +32,6 @@ import java.util.zip.ZipFile;
  */
 public class CopyTask {
 
-    private NotificationCompat.Builder builder;
     private NotificationManager notificationManager;
     private final File mydir;
     ProgressUpdate progressUpdate;

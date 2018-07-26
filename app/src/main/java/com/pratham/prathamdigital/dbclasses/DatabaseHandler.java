@@ -295,7 +295,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     }
 
     // Getting All Parent Contents
-    public ArrayList<Modal_ContentDetail> Get_Contents(String table_name, int id) {
+    public ArrayList<Modal_ContentDetail> Get_Contents(String table_name, String id) {
         ArrayList<Modal_ContentDetail> contents = new ArrayList<>();
         try {
             contents.clear();
@@ -304,7 +304,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             if (table_name.equalsIgnoreCase(PD_Constant.TABLE_PARENT)) {
                 selectQuery = "SELECT  * FROM " + TABLE_PARENT;
             } else {
-                selectQuery = "SELECT  * FROM " + TABLE_CHILD + " WHERE parentid =" + id;
+                selectQuery = "SELECT  * FROM " + TABLE_CHILD + " WHERE parentid =\"" + id + "\"";
             }
             SQLiteDatabase db = this.getWritableDatabase();
             Cursor cursor = db.rawQuery(selectQuery, null);
@@ -312,7 +312,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             if (cursor.moveToFirst()) {
                 do {
                     Modal_ContentDetail contentDetail = new Modal_ContentDetail();
-                    contentDetail.setNodeid(Integer.parseInt(cursor.getString(0)));
+                    contentDetail.setNodeid(cursor.getString(0));
                     contentDetail.setNodetype(cursor.getString(1));
                     contentDetail.setNodetitle(cursor.getString(2));
                     contentDetail.setNodekeywords(cursor.getString(3));
@@ -324,7 +324,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                     contentDetail.setResourcetype(cursor.getString(9));
                     contentDetail.setResourcepath(cursor.getString(10));
                     contentDetail.setLevel(Integer.parseInt(cursor.getString(11)));
-                    contentDetail.setParentid(Integer.parseInt(cursor.getString(12)));
+                    contentDetail.setParentid(cursor.getString(12));
                     // Adding contact to list
                     contents.add(contentDetail);
                 } while (cursor.moveToNext());
@@ -372,7 +372,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
     public boolean CheckGoogleLogin(String id) {
         Cursor cursor;
         SQLiteDatabase database = this.getWritableDatabase();
-        cursor = database.rawQuery("SELECT * FROM " + TABLE_GOOGLEDATA + " WHERE GoogleID =" + id, null);
+        cursor = database.rawQuery("SELECT * FROM " + TABLE_GOOGLEDATA + " WHERE GoogleID = \"" + id + "\"", null);
         if (cursor != null) {
             if (cursor.getCount() > 0) {
                 cursor.moveToFirst();
@@ -462,18 +462,18 @@ public class DatabaseHandler extends SQLiteOpenHelper {
         }
     }
 
-    public int getParentID(int id) {
+    public String getParentID(String id) {
         try {
             SQLiteDatabase database = this.getWritableDatabase();
             Cursor cursor = database.rawQuery("SELECT " + CONTENT_PARENTID + " from " + TABLE_CHILD
-                    + " where " + CONTENT_NODEID + "=" + id, null);
+                    + " where " + CONTENT_NODEID + " = \"" + id + "\"", null);
             cursor.moveToFirst();
             String t_id = cursor.getString(0);
             cursor.close();
             database.close();
-            return Integer.parseInt(t_id);
+            return t_id;
         } catch (Exception e) {
-            return -1;
+            return "-1";
         }
     }
     // Updating single contact
@@ -491,22 +491,22 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 //    }
 
     //     Deleting single content
-    public void deleteContentFromChild(int id) {
+    public void deleteContentFromChild(String id) {
         try {
             SQLiteDatabase db = this.getWritableDatabase();
             db.delete(TABLE_CHILD, CONTENT_NODEID + " = ?",
-                    new String[]{String.valueOf(id)});
+                    new String[]{id});
             db.close();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public void deleteContentFromParent(int id) {
+    public void deleteContentFromParent(String id) {
         try {
             SQLiteDatabase db = this.getWritableDatabase();
             db.delete(TABLE_PARENT, CONTENT_NODEID + " = ?",
-                    new String[]{String.valueOf(id)});
+                    new String[]{id});
             db.close();
         } catch (Exception e) {
             e.printStackTrace();
@@ -515,8 +515,9 @@ public class DatabaseHandler extends SQLiteOpenHelper {
 
     //
 //    // Getting contacts Count
-    public int Get_Total_Contents(int id) {
-        String countQuery = "SELECT  * FROM " + TABLE_CHILD + " WHERE " + CONTENT_PARENTID + " = " + id;
+    public int Get_Total_Contents(String id) {
+        String countQuery = "SELECT  * FROM " + TABLE_CHILD + " WHERE " + CONTENT_PARENTID + " = \""
+                + id + "\"";
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(countQuery, null);
         int count = cursor.getCount();

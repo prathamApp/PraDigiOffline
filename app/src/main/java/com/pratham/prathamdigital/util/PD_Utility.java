@@ -23,6 +23,8 @@ import android.location.Geocoder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.Uri;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -53,7 +55,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.pratham.prathamdigital.PrathamApplication;
 import com.pratham.prathamdigital.R;
+import com.thanosfisherman.wifiutils.WifiUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -1264,7 +1268,6 @@ public class PD_Utility {
 
     public static AlertDialog showLoader(Context context) {
         final View dialogView = View.inflate(context, R.layout.sunbaby_dialog, null);
-
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setView(dialogView);
         final AlertDialog dialog = builder.create();
@@ -1476,5 +1479,19 @@ public class PD_Utility {
         }
         String currentVersion = pInfo.versionName;
         return currentVersion;
+    }
+
+    public static boolean checkWhetherConnectedToRaspberry(Context context) {
+        WifiManager wifiManager = (WifiManager) context.getSystemService(Context.WIFI_SERVICE);
+        if (wifiManager.isWifiEnabled()) {
+            WifiInfo wifiInfo = wifiManager.getConnectionInfo();
+            String ssid = wifiInfo.getSSID();
+            if (ssid.contains(PrathamApplication.hotspot_name))
+                return true;
+            else
+                return false;
+        } else {
+            return false;
+        }
     }
 }

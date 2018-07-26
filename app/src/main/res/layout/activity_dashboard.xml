@@ -25,7 +25,7 @@
             android:gravity="center"
             android:orientation="vertical">
 
-            <!--Root Layout-->
+            <!--option Layout-->
             <LinearLayout
                 android:id="@+id/rootLayout"
                 android:layout_width="wrap_content"
@@ -55,34 +55,13 @@
                     android:orientation="horizontal"
                     android:weightSum="2">
 
-                    <!--        <FrameLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content">
-
-                                <ImageButton
-                                    android:id="@+id/btn_dwFromServer"
-                                    android:layout_width="86dp"
-                                    android:layout_height="86dp"
-                                    android:layout_marginBottom="32dp"
-                                    android:layout_marginLeft="32dp"
-                                    android:layout_marginRight="32dp"
-                                    android:background="@drawable/ic_download_server" />
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_gravity="center_horizontal|bottom"
-                                    android:clickable="false"
-                                    android:text="Download over Internet" />
-                            </FrameLayout>-->
-
                     <FrameLayout
+                        android:id="@+id/btn_CreateFTPServer"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1">
 
                         <ImageButton
-                            android:id="@+id/btn_CreateFTPServer"
                             android:layout_width="86dp"
                             android:layout_height="86dp"
                             android:layout_gravity="center_horizontal"
@@ -100,12 +79,12 @@
                     </FrameLayout>
 
                     <FrameLayout
+                        android:id="@+id/btn_ConnectWifi"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_weight="1">
 
                         <ImageButton
-                            android:id="@+id/btn_ConnectFTPServer"
                             android:layout_width="86dp"
                             android:layout_height="86dp"
                             android:layout_gravity="center_horizontal"
@@ -119,21 +98,21 @@
                             android:layout_height="wrap_content"
                             android:layout_gravity="center_horizontal|bottom"
                             android:clickable="false"
-                            android:text="Connect To FTP Server" />
+                            android:text="Connect To Wifi" />
                     </FrameLayout>
 
                 </LinearLayout>
 
             </LinearLayout>
 
-            <!--Old Layout-->
+            <!--ftp connect Layout-->
             <LinearLayout
-                android:id="@+id/linearLayout"
+                android:id="@+id/ftp_connect_ll"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:background="@drawable/custom_border"
                 android:gravity="center_horizontal"
                 android:orientation="vertical"
-                android:background="@drawable/custom_border"
                 android:visibility="gone">
 
                 <TextView
@@ -226,9 +205,9 @@
                             android:layout_marginRight="16dp"
                             android:layout_weight="1"
                             android:hint="Hostname (e.g. 192.88.0.8)"
-                            android:text="192.168.43.1"
                             android:inputType="text"
                             android:singleLine="true"
+                            android:text="192.168.43.1"
                             android:textColor="@color/text"
                             android:textSize="16sp"
                             android:textStyle="normal" />
@@ -242,10 +221,10 @@
                             android:layout_marginLeft="16dp"
                             android:layout_marginRight="16dp"
                             android:layout_weight="1"
-                            android:text="2121"
                             android:hint="Port (e.g 2121)"
                             android:inputType="number"
                             android:singleLine="true"
+                            android:text="2121"
                             android:textColor="@color/text"
                             android:textSize="16sp"
                             android:textStyle="normal" />
@@ -277,12 +256,12 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="8dp"
-                            android:text="ftp"
                             android:layout_marginLeft="16dp"
                             android:layout_marginRight="16dp"
                             android:layout_weight="1"
                             android:hint="Login"
                             android:singleLine="true"
+                            android:text="ftp"
                             android:textColor="@color/text"
                             android:textSize="16sp"
                             android:textStyle="normal" />
@@ -291,7 +270,6 @@
                         <EditText
                             android:id="@+id/edt_Password"
                             android:layout_width="match_parent"
-                            android:text="ftp"
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="8dp"
                             android:layout_marginLeft="16dp"
@@ -299,6 +277,7 @@
                             android:layout_weight="1"
                             android:hint="Password"
                             android:singleLine="true"
+                            android:text="ftp"
                             android:textColor="@color/text"
                             android:textSize="16sp"
                             android:textStyle="normal" />
@@ -348,6 +327,38 @@
 
             </LinearLayout>
 
+            <!--wifi list layout-->
+            <LinearLayout
+                android:id="@+id/wifi_list_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/custom_border"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="12dp"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:text="Connect Wifi"
+                    android:textColor="@color/red"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <ListView
+                    android:id="@+id/wifi_list"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:visibility="gone" />
+
+                <ProgressBar
+                    android:id="@+id/scan_pb"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content" />
+            </LinearLayout>
         </LinearLayout>
     </android.support.v7.widget.CardView>
 

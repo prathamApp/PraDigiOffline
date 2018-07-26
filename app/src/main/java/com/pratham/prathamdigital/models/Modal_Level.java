@@ -6,7 +6,7 @@ package com.pratham.prathamdigital.models;
 
 public class Modal_Level {
     String name;
-    int id;
+    String id;
 
     public String getName() {
         return name;
@@ -16,11 +16,11 @@ public class Modal_Level {
         this.name = name;
     }
 
-    public int getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(String id) {
         this.id = id;
     }
 }

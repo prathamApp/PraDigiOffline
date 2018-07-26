@@ -173,7 +173,7 @@ public class CopyFiles extends AsyncTask<Void, Integer, String> {
             if (cursor.moveToFirst()) {
                 do {
                     Modal_ContentDetail contentDetail = new Modal_ContentDetail();
-                    contentDetail.setNodeid(Integer.parseInt(cursor.getString(0)));
+                    contentDetail.setNodeid(cursor.getString(0));
                     contentDetail.setNodetype(cursor.getString(1));
                     contentDetail.setNodetitle(cursor.getString(2));
                     contentDetail.setNodekeywords(cursor.getString(3));
@@ -185,7 +185,7 @@ public class CopyFiles extends AsyncTask<Void, Integer, String> {
                     contentDetail.setResourcetype(cursor.getString(9));
                     contentDetail.setResourcepath(cursor.getString(10));
                     contentDetail.setLevel(Integer.parseInt(cursor.getString(11)));
-                    contentDetail.setParentid(Integer.parseInt(cursor.getString(12)));
+                    contentDetail.setParentid(cursor.getString(12));
                     // Adding contact to list
                     contents.add(contentDetail);
                 } while (cursor.moveToNext());

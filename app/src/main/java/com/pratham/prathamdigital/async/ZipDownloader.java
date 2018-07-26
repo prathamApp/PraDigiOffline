@@ -4,7 +4,6 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.PowerManager;
-import android.support.v7.app.NotificationCompat;
 import android.util.Log;
 
 import com.pratham.prathamdigital.interfaces.ProgressUpdate;
@@ -29,10 +28,10 @@ import java.util.zip.ZipFile;
  */
 public class ZipDownloader {
 
-    private NotificationCompat.Builder builder;
     private NotificationManager notificationManager;
-    private final File mydir;
+    private File mydir;
     String filename;
+    String foldername;
     ProgressUpdate progressUpdate;
     Context context;
     private File fileWithinMyDir;
@@ -43,10 +42,17 @@ public class ZipDownloader {
         this.context = context;
         PD_Utility.DEBUG_LOG(1, "url:::", url);
         this.filename = filename;
+        this.foldername = foldername;
         this.progressUpdate = progressUpdate;
         this.wakeLock = wl;
         mydir = context.getDir("Pratham" + foldername, Context.MODE_PRIVATE); //Creating an internal dir;
         if (!mydir.exists()) mydir.mkdirs();
+        if (foldername.equalsIgnoreCase("Game")) {
+            filename = filename.substring(0, filename.lastIndexOf("."));
+            File temp_dir = new File(mydir.getAbsolutePath() + "/" + filename);
+            if (!temp_dir.exists()) temp_dir.mkdirs();
+            mydir = temp_dir;
+        }
         Log.d("internal_file", mydir.getAbsolutePath());
         DownloadZipfile mew = new DownloadZipfile();
         mew.execute(url);
@@ -107,12 +113,14 @@ public class ZipDownloader {
         protected void onPostExecute(String unused) {
             if (result.equalsIgnoreCase("true")) {
                 try {
-//                    builder.setContentText("Download complete");
-//                    builder.setProgress(0, 0, false);
-//                    notificationManager.notify(1000, builder.build());
                     progressUpdate.onZipDownloaded(true);
                     System.out.println("lucy download unzip");
-                    unzip();
+                    if (foldername.equalsIgnoreCase("Game")) {
+                        unzip();
+                    } else {
+                        progressUpdate.onZipExtracted(true);
+                        wakeLock.release();
+                    }
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

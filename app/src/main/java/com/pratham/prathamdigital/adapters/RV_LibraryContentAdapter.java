@@ -66,23 +66,22 @@ public class RV_LibraryContentAdapter extends RecyclerView.Adapter<RV_LibraryCon
                 PD_Utility.setFont(context, holder.l_c_age);
 
                 holder.l_c_age.setText(downloadContents.get(position).getNodetitle());
-                String fileName = downloadContents.get(position).getNodeserverimage()
-                        .substring(downloadContents.get(position).getNodeserverimage().lastIndexOf('/') + 1);
-                //path to /data/data/yourapp/app_data/dirName
+                String fileName = null;
+                if (downloadContents.get(position).getNodeserverimage() != null) {
+                    fileName = downloadContents.get(position).getNodeserverimage()
+                            .substring(downloadContents.get(position).getNodeserverimage().lastIndexOf('/') + 1);
+                }
 
                 ContextWrapper cw = new ContextWrapper(context);
                 //TODO change path
                 File directory = cw.getDir("PrathamImages", Context.MODE_PRIVATE);
                 if (directory == null || directory.listFiles().length == 0) {
-
                     String path = "";
                     // Check folder exists on Internal
                     File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
                     if (intPradigi.exists()) {
                         // Data found on Internal Storage
                         path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";
-                        ;
-
                     }
                     // Check extSDCard present or not
                     else if (hasRealRemovableSdCard(context)) {
@@ -100,17 +99,15 @@ public class RV_LibraryContentAdapter extends RecyclerView.Adapter<RV_LibraryCon
                         }
                     } else {
                         // Data Not Available anywhere
-
                     }
-
-
                     directory = new File(path);
-
                 }
-                File filepath = new File(directory, fileName);
-                Log.d("adapter_filename:::", fileName);
-                Log.d("adapter_filepath:::", filepath.toString());
-                holder.l_child_avatar.setImageDrawable(Drawable.createFromPath(filepath.toString()));
+                if (fileName != null) {
+                    File filepath = new File(directory, fileName);
+                    Log.d("adapter_filename:::", fileName);
+                    Log.d("adapter_filepath:::", filepath.toString());
+                    holder.l_child_avatar.setImageDrawable(Drawable.createFromPath(filepath.toString()));
+                }
 //                holder.l_child_avatar.setScaleType(ImageView.ScaleType.CENTER_CROP);
             }
             holder.l_card_age.setOnClickListener(new View.OnClickListener() {

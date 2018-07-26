@@ -8,7 +8,7 @@ import com.google.gson.annotations.SerializedName;
 
 public class Modal_ContentDetail {
     @SerializedName("nodeid")
-    int nodeid;
+    String nodeid;
     @SerializedName("nodetype")
     String nodetype;
     @SerializedName("nodetitle")
@@ -34,7 +34,7 @@ public class Modal_ContentDetail {
     @SerializedName("level")
     int level;
     @SerializedName("parentid")
-    int parentid;
+    String parentid;
     boolean isDownloading = false;
 
     public boolean isDownloading() {
@@ -45,11 +45,11 @@ public class Modal_ContentDetail {
         isDownloading = downloading;
     }
 
-    public int getNodeid() {
+    public String getNodeid() {
         return nodeid;
     }
 
-    public void setNodeid(int nodeid) {
+    public void setNodeid(String nodeid) {
         this.nodeid = nodeid;
     }
 
@@ -149,11 +149,11 @@ public class Modal_ContentDetail {
         this.level = level;
     }
 
-    public int getParentid() {
+    public String getParentid() {
         return parentid;
     }
 
-    public void setParentid(int parentid) {
+    public void setParentid(String parentid) {
         this.parentid = parentid;
     }
 }

@@ -17,7 +17,6 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.support.v4.content.ContextCompat;
@@ -77,8 +76,8 @@ import com.pratham.prathamdigital.interfaces.PermissionResult;
 import com.pratham.prathamdigital.interfaces.ProgressUpdate;
 import com.pratham.prathamdigital.interfaces.VolleyResult_JSON;
 import com.pratham.prathamdigital.models.Modal_ContentDetail;
-import com.pratham.prathamdigital.models.Modal_DownloadContent;
 import com.pratham.prathamdigital.models.Modal_Level;
+import com.pratham.prathamdigital.models.Modal_Rasp_Content;
 import com.pratham.prathamdigital.util.ActivityManagePermission;
 import com.pratham.prathamdigital.util.ConnectivityReceiver;
 import com.pratham.prathamdigital.util.CopyFiles;
@@ -88,8 +87,7 @@ import com.pratham.prathamdigital.util.PD_Constant;
 import com.pratham.prathamdigital.util.PD_Utility;
 import com.pratham.prathamdigital.util.PermissionUtils;
 import com.pratham.prathamdigital.util.SDCardUtil;
-
-import org.json.JSONObject;
+import com.thanosfisherman.wifiutils.WifiUtils;
 
 import java.io.File;
 import java.io.IOException;
@@ -174,6 +172,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 
     int[] childs = {R.drawable.khel_badi, R.drawable.khel_puri, R.drawable.dekho_aur_seekho};
     private String[] age;
+    private String[] parent_ids;
     private boolean isInitialized;
     RV_AgeFilterAdapter ageFilterAdapter;
     RV_RecommendAdapter rv_recommendAdapter;
@@ -182,8 +181,8 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
     private ArrayList<Modal_ContentDetail> arrayList_content = new ArrayList<>();
     private ArrayList<Modal_ContentDetail> to_be_downloaded = new ArrayList<>();
     private ArrayList<Modal_Level> arrayList_level = new ArrayList<>();
+    private ArrayList<Modal_ContentDetail> contentDownloading = new ArrayList<>();
     public static DatabaseHandler db;
-    private Modal_DownloadContent download_content;
     private int selected_content;
     private ArrayList<Modal_ContentDetail> downloadContents = new ArrayList<>();
     private ArrayList<Modal_ContentDetail> subContents = new ArrayList<>();
@@ -278,7 +277,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 
     @Override
     public void onExtractDone(String zipPath) {
-        fab_my_library.performClick();
+//        fab_my_library.performClick();
     }
 
     // Push the new Score to Server if connected to Internet
@@ -589,41 +588,41 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             text = getResources().getString(R.string.language);
             content_text = getResources().getString(R.string.select_language);
         }
-        new MaterialTapTargetPrompt.Builder(Activity_Main.this)
-                .setTarget(findViewById(id))
-                .setPrimaryTextTypeface(PD_Utility.getFont(Activity_Main.this))
-                .setPrimaryText(text)
-                .setSecondaryTextTypeface(PD_Utility.getFont(Activity_Main.this))
-                .setSecondaryText(content_text)
-                .setAnimationInterpolator(new FastOutSlowInInterpolator())
-                .setBackButtonDismissEnabled(false)
-                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
-                    @Override
-                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
-                        if (state == MaterialTapTargetPrompt.STATE_DISMISSED) {
-                            /*if (target == SEARCH) {
-//                                ShowIntro(LANGUAGE);
-                                ShowIntro(RECOMMEND);
-                            } else */
-                            if (target == MY_LIBRARY) {
-                                fab_my_library.performClick();
-
-                            } /*else if (target == RECOMMEND) {
-                                db.SetIntroFlagTrue(1, googleId);
-                                fab_recom.performClick();
-                            } */ else {
-                                fab_language.performClick();
-                            }
-                        }
-                    }
-                })
-                .show();
+//        new MaterialTapTargetPrompt.Builder(Activity_Main.this)
+//                .setTarget(findViewById(id))
+//                .setPrimaryTextTypeface(PD_Utility.getFont(Activity_Main.this))
+//                .setPrimaryText(text)
+//                .setSecondaryTextTypeface(PD_Utility.getFont(Activity_Main.this))
+//                .setSecondaryText(content_text)
+//                .setAnimationInterpolator(new FastOutSlowInInterpolator())
+//                .setBackButtonDismissEnabled(false)
+//                .setPromptStateChangeListener(new MaterialTapTargetPrompt.PromptStateChangeListener() {
+//                    @Override
+//                    public void onPromptStateChanged(MaterialTapTargetPrompt prompt, int state) {
+//                        if (state == MaterialTapTargetPrompt.STATE_DISMISSED) {
+//                            /*if (target == SEARCH) {
+////                                ShowIntro(LANGUAGE);
+//                                ShowIntro(RECOMMEND);
+//                            } else */
+//                            if (target == MY_LIBRARY) {
+        fab_my_library.performClick();
+//
+//                            } /*else if (target == RECOMMEND) {
+//                                db.SetIntroFlagTrue(1, googleId);
+//                                fab_recom.performClick();
+//                            } */ else {
+//                                fab_language.performClick();
+//                            }
+//                        }
+//                    }
+//                })
+//                .show();
     }
 
-    private void initializeGalleryAdapater(final boolean isLibrary) {
+    private void initializeGalleryAdapater() {
         arrayList_level.clear();
         if (isLibrary) {
-            downloadContents = db.Get_Contents(PD_Constant.TABLE_PARENT, 0);
+            downloadContents = db.Get_Contents(PD_Constant.TABLE_PARENT, "0");
             ArrayList<Integer> positionWithNoChilds = new ArrayList<>();
             for (int i = 0; i < downloadContents.size(); i++) {
                 int count = db.Get_Total_Contents(downloadContents.get(i).getNodeid());
@@ -653,8 +652,6 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             }
         } else {
             // todo child & parent logic
-
-
             gallery_rv.setVisibility(View.VISIBLE);
             rl_no_data.setVisibility(View.GONE);
             age = getResources().getStringArray(R.array.main_contents);
@@ -662,31 +659,58 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             ageFilterAdapter = new RV_AgeFilterAdapter(this, this, age, childs);
             gallery_rv.setAdapter(ageFilterAdapter);
         }
-        layoutManager.setOnItemSelectedListener(new GalleryLayoutManager.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(RecyclerView recyclerView, View item, final int position) {
-                arrayList_level.clear();
-                if (isLibrary) {
+        layoutManager.setOnItemSelectedListener(itemSelectedListener);
+    }
+
+    GalleryLayoutManager.OnItemSelectedListener itemSelectedListener = new GalleryLayoutManager.OnItemSelectedListener() {
+        @Override
+        public void onItemSelected(RecyclerView recyclerView, View item, final int position) {
+            arrayList_level.clear();
+            if (isLibrary) {
+                content_rv.setVisibility(View.VISIBLE);
+                subContents = db.Get_Contents(PD_Constant.TABLE_CHILD, downloadContents.get(position).getNodeid());
+                Modal_Level level = new Modal_Level();
+                level.setName(downloadContents.get(position).getNodetitle());
+                level.setId(downloadContents.get(position).getNodeid());
+                setRecyclerLevel(level);
+                if (subLibraryAdapter == null) {
+                    subLibraryAdapter = new RV_SubLibraryAdapter(Activity_Main.this, Activity_Main.this, subContents);
+                    content_rv.setAdapter(subLibraryAdapter);
+                } else {
+                    content_rv.setAdapter(subLibraryAdapter);
+                    content_rv.getViewTreeObserver().addOnPreDrawListener(preDrawListenerRecommend);
+                    subLibraryAdapter.updateData(subContents);
+                }
+            } else {
+                // todo scroll up change for raspberry
+//                Toast.makeText(Activity_Main.this, ".mnn,", Toast.LENGTH_SHORT).show();
+                subContents.clear();
+                for (Modal_ContentDetail content : arrayList_content) {
+                    if (content.getParentid() != null) {
+                        if (content.getParentid().equalsIgnoreCase(parent_ids[position]))
+                            subContents.add(content);
+                    }
+                }
+                if (subContents.size() > 0) {
                     content_rv.setVisibility(View.VISIBLE);
-                    subContents = db.Get_Contents(PD_Constant.TABLE_CHILD, downloadContents.get(position).getNodeid());
-                    Modal_Level level = new Modal_Level();
-                    level.setName(downloadContents.get(position).getNodetitle());
-                    level.setId(downloadContents.get(position).getNodeid());
-                    setRecyclerLevel(level);
-                    if (subLibraryAdapter == null) {
-                        subLibraryAdapter = new RV_SubLibraryAdapter(Activity_Main.this, Activity_Main.this, subContents);
-                        content_rv.setAdapter(subLibraryAdapter);
+                    rl_no_content.setVisibility(View.GONE);
+                    if (rv_recommendAdapter == null) {
+                        rv_recommendAdapter = new RV_RecommendAdapter(Activity_Main.this,
+                                Activity_Main.this, subContents);
+                        content_rv.setAdapter(rv_recommendAdapter);
                     } else {
-                        content_rv.setAdapter(subLibraryAdapter);
-                        content_rv.getViewTreeObserver().addOnPreDrawListener(preDrawListenerRecommend);
-                        subLibraryAdapter.updateData(subContents);
+                        content_rv.setAdapter(rv_recommendAdapter);
+                        content_rv.getViewTreeObserver().addOnPreDrawListener(preDrawListenerContent);
+                        rv_recommendAdapter.updateData(subContents);
+                        Log.d("content_size::", arrayList_content.size() + "");
                     }
                 } else {
-                    // todo scroll up change for ftp
+                    content_rv.setVisibility(View.GONE);
+                    rl_no_content.setVisibility(View.VISIBLE);
                 }
             }
-        });
-    }
+        }
+    };
 
     private void setRecyclerLevel(Modal_Level level) {
         if (level != null) {
@@ -763,7 +787,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         txt_title.setAlpha(0f);
         txt_title.setText(getResources().getString(R.string.my_library));
         txt_title.animate().alpha(1f).setStartDelay(100).setDuration(500).setInterpolator(new FastOutSlowInInterpolator());
-        initializeGalleryAdapater(isLibrary);
+        initializeGalleryAdapater(/*isLibrary*/);
     }
 
     @OnClick(R.id.c_fab_search)
@@ -1015,10 +1039,13 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putBoolean("IS_SDCARD",
                     false).apply();
             // goto Dashboard if path is selected
-            Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
-            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
-            startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
-
+            if (!PD_Utility.checkWhetherConnectedToRaspberry(Activity_Main.this)) {
+                Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
+                startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
+            } else {
+                onActivityResult(ACTIVITY_DOWNLOAD_METHOD, 0, null);
+            }
         }
         // Check extSDCard present or not
         else if (hasRealRemovableSdCard(Activity_Main.this)) {
@@ -1029,9 +1056,13 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 startActivityForResult(intent, PraDigiPath);
             } else {
                 PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", ""));
-                Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
-                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
-                startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
+                if (!PD_Utility.checkWhetherConnectedToRaspberry(Activity_Main.this)) {
+                    Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
+                    startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
+                } else {
+                    onActivityResult(ACTIVITY_DOWNLOAD_METHOD, 0, null);
+                }
             }
         }
 
@@ -1091,16 +1122,18 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 
                 Toast.makeText(this, "SD Card Selected !!!", Toast.LENGTH_SHORT).show();
 
-//                // goto Dashboard if path is selected
-                Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
-                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
-                startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
+                if (!PD_Utility.checkWhetherConnectedToRaspberry(Activity_Main.this)) {
+                    Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
+                    startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
+                } else {
+                    onActivityResult(ACTIVITY_DOWNLOAD_METHOD, 0, null);
+                }
 
             } else {
                 Toast.makeText(this, "Please select SD Card!!!", Toast.LENGTH_LONG).show();
             }
         }
-
         if (requestCode == ACTIVITY_LANGUAGE) {
             if (resultCode == Activity.RESULT_OK) {
                 String language = data.getStringExtra(PD_Constant.LANGUAGE);
@@ -1109,7 +1142,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 Log.d("language_after_insert::", db.GetUserLanguage());
                 PD_Utility.setLocale(this, db.GetUserLanguage());
                 if (!db.CheckIntroShownStatus(googleId)) {
-                    ShowIntro(MY_LIBRARY);
+//                    ShowIntro(MY_LIBRARY);
                 } else {
                     if (!isLibrary) {
 //                        fab_recom.performClick();
@@ -1129,6 +1162,10 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             }
         } else if (requestCode == ACTIVITY_SEARCH) {
             fab_my_library.performClick();
+        } else if (requestCode == ACTIVITY_DOWNLOAD_METHOD) {
+            showDialog();
+            new PD_ApiRequest(Activity_Main.this, Activity_Main.this).
+                    getContentFromRaspberry("CONTENT_HEADER", "http://192.168.4.1:8080/api/contentnode");
         } else if (requestCode == SDCardLocationChooser) {
             Uri treeUri = data.getData();
             String path = SDCardUtil.getFullPathFromTreeUri(treeUri, Activity_Main.this);
@@ -1234,22 +1271,18 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     //TODO change path
                     File directory = Activity_Main.this.getDir("PrathamPdf", Context.MODE_PRIVATE);
                     if (directory == null || directory.listFiles().length == 0) {
-
                         String path = "";
                         // Check folder exists on Internal
                         File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
                         if (intPradigi.exists()) {
                             // Data found on Internal Storage
                             path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamPdf";
-
                         }
-
                         // Check extSDCard present or not
                         else if (hasRealRemovableSdCard(Activity_Main.this)) {
                             // SD Card Available
                             // SD Card Path
                             String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
-
                             DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
                             DocumentFile tmp = pickedDir.findFile("PraDigi");
                             DocumentFile tmp1 = tmp.findFile("app_PrathamPdf");
@@ -1262,19 +1295,10 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                             // Data Not Available anywhere
                             finish();
                         }
-
-//                        // OLD CODE
-//                        String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
-//                        DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
-//                        DocumentFile tmp = pickedDir.findFile("PraDigi");
-//                        DocumentFile tmp1 = tmp.findFile("app_PrathamPdf");
-//                        String path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
-
-
                         directory = new File(path);
                     }
-                    Log.d("game_filepath:::", directory.getAbsolutePath() + "/" + subContents.get(position).getResourcepath());
-                    intent.putExtra("pdfPath", "file:///" + directory.getAbsolutePath() + "/" + subContents.get(position).getResourcepath());
+                    Log.d("game_filepath:::", directory.getAbsolutePath() + "/" + subContents.get(position).getNodekeywords() + ".pdf");
+                    intent.putExtra("pdfPath", "file:///" + directory.getAbsolutePath() + "/" + subContents.get(position).getNodekeywords() + ".pdf");
                     intent.putExtra("pdfTitle", subContents.get(position).getNodetitle());
                     intent.putExtra("resId", subContents.get(position).getResourceid());
                     ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this,
@@ -1289,7 +1313,6 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     //TODO change path
                     File directory = Activity_Main.this.getDir("PrathamVideo", Context.MODE_PRIVATE);
                     if (directory == null || directory.listFiles().length == 0) {
-
                         String path = "";
                         // Check folder exists on Internal
                         File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
@@ -1297,13 +1320,11 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                             // Data found on Internal Storage
                             path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamVideo";
                         }
-
                         // Check extSDCard present or not
                         else if (hasRealRemovableSdCard(Activity_Main.this)) {
                             // SD Card Available
                             // SD Card Path
                             String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
-
                             DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
                             DocumentFile tmp = pickedDir.findFile("PraDigi");
                             DocumentFile tmp1 = tmp.findFile("app_PrathamVideo");
@@ -1315,12 +1336,10 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                             // Data Not Available anywhere
                             finish();
                         }
-
-
                         directory = new File(path);
                     }
-                    Log.d("game_filepath:::", directory.getAbsolutePath() + "/" + subContents.get(position).getResourcepath());
-                    intent.putExtra("videoPath", "file:///" + directory.getAbsolutePath() + "/" + subContents.get(position).getResourcepath());
+                    Log.d("game_filepath:::", directory.getAbsolutePath() + "/" + subContents.get(position).getNodekeywords() + ".mp4");
+                    intent.putExtra("videoPath", "file:///" + directory.getAbsolutePath() + "/" + subContents.get(position).getNodekeywords() + ".mp4");
                     intent.putExtra("videoTitle", subContents.get(position).getNodetitle());
                     intent.putExtra("resId", subContents.get(position).getResourceid());
 //                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this,
@@ -1343,36 +1362,12 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 subLibraryAdapter.updateData(subContents);
             }
         } else {
-            /*if (arrayList_content.get(position).getResourcetype().equalsIgnoreCase("Video")) {
-                Intent intent = new Intent(Activity_Main.this, Activity_VPlayer.class);
-                Log.d("server_path:::", arrayList_content.get(position).getNodeserverpath());
-                intent.putExtra("videoPath", PD_Utility.getYouTubeID(arrayList_content.get(position).getNodeserverpath()));
-                intent.putExtra("title", arrayList_content.get(position).getNodetitle());
-                ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this,
-                        holder, "transition_recommend");
-                Runtime rs = Runtime.getRuntime();
-                rs.freeMemory();
-                rs.gc();
-                rs.freeMemory();
-                startActivityForResult(intent, ACTIVITY_VPLAYER, options.toBundle());
-            } else {*/
-            if (PD_Utility.isInternetAvailable(Activity_Main.this)) {
-                Modal_Level level = new Modal_Level();
-                level.setId(arrayList_content.get(position).getNodeid());
-                level.setName(arrayList_content.get(position).getNodetitle());
-                setRecyclerLevel(level);
-                showDialog();
-                new Handler().postDelayed(new Runnable() {
-                    @Override
-                    public void run() {
-                        new PD_ApiRequest(Activity_Main.this, Activity_Main.this).getDataVolley("BROWSE",
-                                PD_Constant.URL.BROWSE_BY_ID.toString() + arrayList_content.get(position).getNodeid());
-                    }
-                }, 2000);
-            } else {
-                updateInternetConnection();
-            }
-//            }
+            Modal_Level level = new Modal_Level();
+            level.setId(subContents.get(position).getNodeid());
+            level.setName(subContents.get(position).getNodetitle());
+            setRecyclerLevel(level);
+            String p_id = subContents.get(position).getNodeid();
+            showChildContent(p_id);
         }
     }
 
@@ -1381,24 +1376,19 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         //
         // TODO change path
         File directory = Activity_Main.this.getDir("PrathamGame", Context.MODE_PRIVATE);
-        if (directory == null || directory.listFiles().length == 0) {
-
+        if (directory == null) {
             String path = "";
-
             // Check folder exists on Internal
             File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
             if (intPradigi.exists()) {
                 // Data found on Internal Storage
                 path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
-
             }
-
             // Check extSDCard present or not
             else if (hasRealRemovableSdCard(Activity_Main.this)) {
                 // SD Card Available
                 // SD Card Path
                 String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
-
                 DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
                 DocumentFile tmp = pickedDir.findFile("PraDigi");
                 DocumentFile tmp1 = tmp.findFile("app_PrathamGame");
@@ -1410,24 +1400,17 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 // Data Not Available anywhere
                 finish();
             }
-
-
             directory = new File(path);
-
-
 //            //OLD CODE
 //            String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
 //            DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
 //            DocumentFile tmp = pickedDir.findFile("PraDigi");
 //            DocumentFile tmp1 = tmp.findFile("app_PrathamGame");
 //            String path = SDCardUtil.getRealPathFromURI(Activity_Main.this, tmp1.getUri());
-
-
-            directory = new File(path);
         }
-        intent.putExtra("index_path", directory.getAbsolutePath() + "/" + contentDetail.getResourcepath());
+        intent.putExtra("index_path", directory.getAbsolutePath() + "/" + contentDetail.getNodekeywords() + "/index.html");
         intent.putExtra("path", directory.getAbsolutePath() + "/" +
-                new StringTokenizer(contentDetail.getResourcepath(), "/").nextToken() + "/");
+                new StringTokenizer(contentDetail.getNodekeywords() + "/index.html", "/").nextToken() + "/");
         intent.putExtra("resId", contentDetail.getResourceid());
         Runtime rs = Runtime.getRuntime();
         rs.freeMemory();
@@ -1454,13 +1437,12 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                                 TastyToast.WARNING);
                     } else {
                         rv_recommendAdapter.reveal(holder);
-                        to_be_downloaded.add(arrayList_content.get(position));
-                        arrayList_content.get(position).setDownloading(true);
+                        to_be_downloaded.add(subContents.get(position));
+                        subContents.get(position).setDownloading(true);
                         rv_recommendAdapter.setSelectedIndex(position, null);
                         if (to_be_downloaded.size() == 1) {
                             Log.d("pressed::", "again");
-                            new PD_ApiRequest(Activity_Main.this, Activity_Main.this).getDataVolley("DOWNLOAD",
-                                    PD_Constant.URL.DOWNLOAD_RESOURCE.toString() + to_be_downloaded.get(0).getNodeid());
+                            notifySuccess("DOWNLOAD", "");
                         }
                     }
                 }
@@ -1480,13 +1462,12 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                         TastyToast.WARNING);
             } else {
                 rv_recommendAdapter.reveal(holder);
-                to_be_downloaded.add(arrayList_content.get(position));
-                arrayList_content.get(position).setDownloading(true);
+                to_be_downloaded.add(subContents.get(position));
+                subContents.get(position).setDownloading(true);
                 rv_recommendAdapter.setSelectedIndex(position, null);
                 if (to_be_downloaded.size() == 1) {
                     Log.d("pressed::", "again");
-                    new PD_ApiRequest(Activity_Main.this, Activity_Main.this).getDataVolley("DOWNLOAD",
-                            PD_Constant.URL.DOWNLOAD_RESOURCE.toString() + to_be_downloaded.get(0).getNodeid());
+                    notifySuccess("DOWNLOAD", "");
                 }
             }
         }
@@ -1506,7 +1487,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     @Override
                     public void onClick(SweetAlertDialog sDialog) {
                         // reuse previous dialog instance
-                        int parentId = subContents.get(position).getParentid();
+                        String parentId = subContents.get(position).getParentid();
                         db.deleteContentFromChild(subContents.get(position).getNodeid());
                         String substr[] = subContents.get(position).getResourcepath().split("/");
                         deleteResource(subContents.get(position).getResourcetype(), substr[0]);
@@ -1595,13 +1576,13 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         return dir.delete();
     }
 
-    private void checkAndDeleteParent(int parentId) {
+    private void checkAndDeleteParent(String parentId) {
         int count = db.Get_Total_Contents(parentId);
         Log.d("remaining::", "" + count);
         if (count == 0) {
-            int p_id = db.getParentID(parentId); //Getting the parentId of the parent node
+            String p_id = db.getParentID(parentId); //Getting the parentId of the parent node
             db.deleteContentFromChild(parentId);
-            if (p_id != -1) {
+            if (!p_id.equalsIgnoreCase("-1")) {
                 checkAndDeleteParent(p_id);
             }
             /*
@@ -1643,28 +1624,65 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     rl_no_content.setVisibility(View.VISIBLE);
                 }
             } else if (requestType.equalsIgnoreCase("DOWNLOAD")) {
-                JSONObject jsonObject = new JSONObject(response);
-                download_content = gson.fromJson(jsonObject.toString(), Modal_DownloadContent.class);
-                PD_Utility.DEBUG_LOG(1, TAG, "nodelist_length:::" + download_content.getNodelist().size());
-                PD_Utility.DEBUG_LOG(1, TAG, "foldername:::" + download_content.getFoldername());
-                String fileName = download_content.getDownloadurl()
-                        .substring(download_content.getDownloadurl().lastIndexOf('/') + 1);
-                PD_Utility.DEBUG_LOG(1, TAG, "filename:::" + fileName);
+                contentDownloading.clear();
+                contentDownloading.add(to_be_downloaded.get(0));
+                getContentParents(to_be_downloaded.get(0).getParentid());
+                String url = to_be_downloaded.get(0).getResourcepath();
+                String fileName = to_be_downloaded.get(0).getResourcepath().substring(
+                        to_be_downloaded.get(0).getResourcepath().lastIndexOf('/') + 1);
+                String foldername = to_be_downloaded.get(0).getResourcetype();
+                PD_Utility.DEBUG_LOG(1, TAG, "filename:::" + fileName + " foldername:::" + foldername);
                 PowerManager pm = (PowerManager) Activity_Main.this.getSystemService(Context.POWER_SERVICE);
                 PowerManager.WakeLock wl = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "MyWakeLock");
-                if (download_content.getDownloadurl().length() > 0) {
+                if (fileName.length() > 0) {
                     main_download_title.setText("Downloading...\n" + to_be_downloaded.get(0).getNodetitle());
                     main_fab_download.setDownloading(true);
                     main_fab_download.setClickable(false);
                     main_rl_download.setVisibility(View.VISIBLE);
                     main_rl_download.startAnimation(AnimationUtils.loadAnimation(this, R.anim.fab_scale_up));
-                    new ZipDownloader(Activity_Main.this, Activity_Main.this, download_content.getDownloadurl(),
-                            download_content.getFoldername(), fileName, wl);
+                    new ZipDownloader(Activity_Main.this, Activity_Main.this,
+                            url, foldername, fileName, wl);
                 }
             } else if (requestType.equalsIgnoreCase("SCORE")) {
                 // Reset sentFlag to 1 if Pushed
                 Log.d("success:::", "score");
                 resetSentFlag();
+            } else if (requestType.equalsIgnoreCase("CONTENT_HEADER")) {
+                arrayList_content.clear();
+                isLibrary = false;
+                gallery_rv.setVisibility(View.VISIBLE);
+                rl_no_data.setVisibility(View.GONE);
+                Type listType = new TypeToken<ArrayList<Modal_Rasp_Content>>() {
+                }.getType();
+                List<Modal_Rasp_Content> rasp_contents = gson.fromJson(response, listType);
+                for (Modal_Rasp_Content modal_rasp_content : rasp_contents) {
+                    arrayList_content.add(modal_rasp_content.setContentToConfigNodeStructure(modal_rasp_content));
+                }
+                PD_Utility.DEBUG_LOG(1, TAG, "content_length:::" + arrayList_content.size());
+                arrayList_content = removeContentIfDownloaded(arrayList_content);
+                arrayList_content = checkIfAlreadyDownloading(arrayList_content);
+                ArrayList<String> temp_age = new ArrayList<>();
+                ArrayList<String> temp_parent = new ArrayList<>();
+                for (int i = 0; i < arrayList_content.size(); i++) {
+                    if (arrayList_content.get(i).getParentid() == null) {
+                        temp_age.add(arrayList_content.get(i).getNodetitle());
+                        temp_parent.add(arrayList_content.get(i).getNodeid());
+                    }
+                }
+                age = new String[temp_age.size()];
+                parent_ids = new String[temp_parent.size()];
+                for (int i = 0; i < temp_age.size(); i++) {
+                    age[i] = temp_age.get(i);
+                    parent_ids[i] = temp_parent.get(i);
+                }
+                ageFilterAdapter = new RV_AgeFilterAdapter(this, this, age, childs);
+                gallery_rv.setAdapter(ageFilterAdapter);
+                Modal_Level level = new Modal_Level();
+                level.setId(parent_ids[0]);
+                level.setName(age[0]);
+                setRecyclerLevel(level);
+                if (dialog != null)
+                    dialog.dismiss();
             }
         } catch (JsonSyntaxException e) {
             e.printStackTrace();
@@ -1673,6 +1691,18 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         } finally {
             if (dialog != null) {
                 dialog.dismiss();
+            }
+        }
+    }
+
+    private void getContentParents(String parentid) {
+        for (Modal_ContentDetail contentDetail : arrayList_content) {
+            if (parentid.equalsIgnoreCase(contentDetail.getNodeid())) {
+                contentDownloading.add(contentDetail);
+                if (contentDetail.getParentid() != null) {
+                    getContentParents(contentDetail.getParentid());
+                }
+                break;
             }
         }
     }
@@ -1770,8 +1800,8 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
     }
 
     private void showDialog() {
-        if (dialog == null)
-            dialog = PD_Utility.showLoader(Activity_Main.this);
+//        if (dialog == null)
+        dialog = PD_Utility.showLoader(Activity_Main.this);
         dialog.show();
     }
 
@@ -1794,6 +1824,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 
     @Override
     public void onProgressUpdate(int progress) {
+        Log.d("onProgressUpdate::", "" + progress);
         main_fab_download.setProgress((float) (progress * .01));
         if (progress == 100) {
             main_download_title.setText(R.string.please_wait);
@@ -1804,13 +1835,13 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
     @Override
     public void onZipDownloaded(boolean isDownloaded) {
         if (isDownloaded) {
-            for (int i = 0; i < download_content.getNodelist().size(); i++) {
-                String fileName = download_content.getNodelist().get(i).getNodeserverimage()
-                        .substring(download_content.getNodelist().get(i).getNodeserverimage().lastIndexOf('/') + 1);
-                new ImageDownload(Activity_Main.this, fileName)
-                        .execute(download_content.getNodelist().get(i).getNodeserverimage());
+            for (Modal_ContentDetail downloadedContent : contentDownloading) {
+                if (downloadedContent.getNodeserverimage() != null) {
+                    String filename = downloadedContent.getNodeserverimage()
+                            .substring(downloadedContent.getNodeserverimage().lastIndexOf('/') + 1);
+                    new ImageDownload(Activity_Main.this, filename).execute(downloadedContent.getNodeserverimage());
+                }
             }
-            addContentToDatabase(download_content);
         } else {
             main_rl_download.startAnimation(AnimationUtils.loadAnimation(Activity_Main.this, R.anim.fab_scale_down));
             main_rl_download.setVisibility(View.GONE);
@@ -1818,24 +1849,26 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     TastyToast.ERROR);
             to_be_downloaded.remove(0);
         }
+//        new ZipDownloader(context, progressUpdate, directoryPath + "/" + filename, foldername);
     }
 
     @Override
     public void onZipExtracted(boolean isExtracted) {
+        addContentToDatabase(contentDownloading);
         if (isExtracted) {
-            for (int i = 0; i < arrayList_content.size(); i++) {
-                if (arrayList_content.get(i).getNodeid() == to_be_downloaded.get(0).getNodeid()) {
-                    arrayList_content.remove(i);
+            for (int i = 0; i < subContents.size(); i++) {
+                if (subContents.get(i).getNodeid() == to_be_downloaded.get(0).getNodeid()) {
+                    subContents.remove(i);
                     rv_recommendAdapter.notifyItemRemoved(i);
-                    rv_recommendAdapter.notifyItemRangeChanged(i, arrayList_content.size());
+                    rv_recommendAdapter.notifyItemRangeChanged(i, subContents.size());
                     rv_recommendAdapter.setSelectedIndex(-1, null);
-                    rv_recommendAdapter.updateData(arrayList_content);
+                    rv_recommendAdapter.updateData(subContents);
+                    break;
                 }
             }
             to_be_downloaded.remove(0);
             if (to_be_downloaded.size() > 0) {
-                new PD_ApiRequest(Activity_Main.this, Activity_Main.this).getDataVolley("DOWNLOAD",
-                        PD_Constant.URL.DOWNLOAD_RESOURCE.toString() + to_be_downloaded.get(0).getNodeid());
+                notifySuccess("DOWNLOAD", "");
             } else {
                 main_rl_download.startAnimation(AnimationUtils.loadAnimation(Activity_Main.this, R.anim.fab_scale_down));
                 main_rl_download.setVisibility(View.GONE);
@@ -1843,19 +1876,18 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         }
     }
 
-    private void addContentToDatabase(Modal_DownloadContent download_content) {
+    private void addContentToDatabase(ArrayList<Modal_ContentDetail> download_content) {
         ArrayList<String> p_ids = db.getDownloadContentID(PD_Constant.TABLE_PARENT);
         ArrayList<String> c_ids = db.getDownloadContentID(PD_Constant.TABLE_CHILD);
-        for (int i = 0; i < download_content.getNodelist().size(); i++) {
-            if (i == 0) {
-                if (!p_ids.contains(String.valueOf(download_content.getNodelist().get(i).getNodeid())))
-                    db.Add_Content(PD_Constant.TABLE_PARENT, download_content.getNodelist().get(i));
+        for (int i = 0; i < download_content.size(); i++) {
+            if (download_content.get(i).getParentid() == null) {
+                if (!p_ids.contains(download_content.get(i).getNodeid()))
+                    db.Add_Content(PD_Constant.TABLE_PARENT, download_content.get(i));
             } else {
-                if (!c_ids.contains(String.valueOf(download_content.getNodelist().get(i).getNodeid())))
-                    db.Add_Content(PD_Constant.TABLE_CHILD, download_content.getNodelist().get(i));
+                if (!c_ids.contains(download_content.get(i).getNodeid()))
+                    db.Add_Content(PD_Constant.TABLE_CHILD, download_content.get(i));
             }
         }
-//        db.Add_DOownloadedFileDetail(download_content.getNodelist().get(download_content.getNodelist().size() - 1));
     }
 
     @Override
@@ -1885,15 +1917,36 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             Log.d("sub_content_size::", subContents.size() + "");
             subLibraryAdapter.updateData(subContents);
         } else {
-            showDialog();
-            new Handler().postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    new PD_ApiRequest(Activity_Main.this, Activity_Main.this).getDataVolley("BROWSE",
-                            PD_Constant.URL.BROWSE_BY_ID.toString() + arrayList_level.get(position).getId());
-                    arrayList_level.subList(position + 1, arrayList_level.size()).clear();
-                }
-            }, 2000);
+            String p_id = arrayList_level.get(position).getId();
+            arrayList_level.subList(position + 1, arrayList_level.size()).clear();
+            showChildContent(p_id);
+        }
+    }
+
+    private void showChildContent(String p_id) {
+        subContents.clear();
+        for (Modal_ContentDetail content : arrayList_content) {
+            if (content.getParentid() != null) {
+                if (content.getParentid().equalsIgnoreCase(p_id))
+                    subContents.add(content);
+            }
+        }
+        if (subContents.size() > 0) {
+            content_rv.setVisibility(View.VISIBLE);
+            rl_no_content.setVisibility(View.GONE);
+            if (rv_recommendAdapter == null) {
+                rv_recommendAdapter = new RV_RecommendAdapter(Activity_Main.this,
+                        Activity_Main.this, subContents);
+                content_rv.setAdapter(rv_recommendAdapter);
+            } else {
+                content_rv.setAdapter(rv_recommendAdapter);
+                content_rv.getViewTreeObserver().addOnPreDrawListener(preDrawListenerContent);
+                rv_recommendAdapter.updateData(subContents);
+                Log.d("content_size::", arrayList_content.size() + "");
+            }
+        } else {
+            content_rv.setVisibility(View.GONE);
+            rl_no_content.setVisibility(View.VISIBLE);
         }
     }
 

@@ -73,15 +73,16 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
         // TODO set Font here
         PD_Utility.setFont(context, holder.sub_lib_name);
         holder.sub_lib_name.setText(sub_content.get(holder.getAdapterPosition()).getNodetitle());
-        String fileName = sub_content.get(holder.getAdapterPosition()).getNodeserverimage()
-                .substring(sub_content.get(holder.getAdapterPosition()).getNodeserverimage().lastIndexOf('/') + 1);
+        String fileName = null;
+        if (sub_content.get(holder.getAdapterPosition()).getNodeserverimage() != null) {
+            fileName = sub_content.get(holder.getAdapterPosition()).getNodeserverimage()
+                    .substring(sub_content.get(holder.getAdapterPosition()).getNodeserverimage().lastIndexOf('/') + 1);
+        }
         //path to /data/data/yourapp/app_data/dirName
         ContextWrapper cw = new ContextWrapper(context);
         //TODO change path
         File directory = cw.getDir("PrathamImages", Context.MODE_PRIVATE);
         if (directory == null || directory.listFiles().length == 0) {
-
-
             String path = "";
             // Check folder exists on Internal
             File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
@@ -89,13 +90,11 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
                 // Data found on Internal Storage
                 path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamImages";
             }
-
             // Check extSDCard present or not
             else if (hasRealRemovableSdCard(context)) {
                 // SD Card Available
                 // SD Card Path
                 String uri = PreferenceManager.getDefaultSharedPreferences(context).getString("URI", "");
-
                 DocumentFile pickedDir = DocumentFile.fromTreeUri(context, Uri.parse(uri));
                 DocumentFile tmp = pickedDir.findFile("PraDigi");
                 DocumentFile tmp1 = tmp.findFile("app_PrathamImages");
@@ -107,14 +106,14 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
             } else {
                 // Data Not Available anywhere
             }
-
             directory = new File(path);
-
         }
-        File filepath = new File(directory, fileName);
-        Log.d("adapter_filename:::", fileName);
-        Log.d("adapter_filepath:::", filepath.toString());
-        holder.sub_lib_content_img.setImageDrawable(Drawable.createFromPath(filepath.toString()));
+        if (fileName != null) {
+            File filepath = new File(directory, fileName);
+            Log.d("adapter_filename:::", fileName);
+            Log.d("adapter_filepath:::", filepath.toString());
+            holder.sub_lib_content_img.setImageDrawable(Drawable.createFromPath(filepath.toString()));
+        }
         holder.card_sub_lib.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {

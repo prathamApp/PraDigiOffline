@@ -3,7 +3,6 @@ package com.pratham.prathamdigital.custom;
 import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.Rect;
-import android.support.v7.recyclerview.BuildConfig;
 import android.support.v7.widget.LinearSmoothScroller;
 import android.support.v7.widget.LinearSnapHelper;
 import android.support.v7.widget.OrientationHelper;
@@ -13,6 +12,8 @@ import android.util.Log;
 import android.util.SparseArray;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.pratham.prathamdigital.BuildConfig;
 
 import static android.support.v7.widget.RecyclerView.SCROLL_STATE_IDLE;
 

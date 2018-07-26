@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.support.multidex.MultiDex;
 import android.support.v7.app.AppCompatDelegate;
 
+import com.androidnetworking.AndroidNetworking;
 import com.pratham.prathamdigital.util.ConnectivityReceiver;
 
 import net.vrallev.android.cat.Cat;
@@ -22,6 +23,7 @@ import java.util.UUID;
 public class PrathamApplication extends Application {
     private static PrathamApplication mInstance;
     public static FTPClient client1;
+    public static String hotspot_name = "";
 
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
@@ -40,11 +42,12 @@ public class PrathamApplication extends Application {
     }
 
 
-    public static String path="";
+    public static String path = "";
+
     @Override
     public void onCreate() {
         super.onCreate();
-
+        AndroidNetworking.initialize(getApplicationContext());
         mInstance = this;
     }
 
