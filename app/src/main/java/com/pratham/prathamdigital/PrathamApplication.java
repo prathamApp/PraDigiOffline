@@ -3,7 +3,6 @@ package com.pratham.prathamdigital;
 import android.app.Application;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.net.Uri;
 import android.support.multidex.MultiDex;
 import android.support.v7.app.AppCompatDelegate;
 
@@ -23,7 +22,6 @@ import java.util.UUID;
 public class PrathamApplication extends Application {
     private static PrathamApplication mInstance;
     public static FTPClient client1;
-    public static String hotspot_name = "";
 
     static {
         AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);

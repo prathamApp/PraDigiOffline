@@ -359,6 +359,86 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content" />
             </LinearLayout>
+
+            <!--enter ip layout-->
+            <LinearLayout
+                android:id="@+id/enterIP_layout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@drawable/custom_border"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:text="Enter Ip"
+                    android:textColor="@color/red"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_ip_address"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_50"
+                    android:layout_marginLeft="@dimen/size_10"
+                    android:layout_marginRight="@dimen/size_10"
+                    android:background="@android:color/darker_gray"
+                    android:text="192.168.4.1"
+                    android:inputType="text" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:text="Enter Port"
+                    android:textColor="@color/red"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_port"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_50"
+                    android:layout_marginLeft="@dimen/size_10"
+                    android:layout_marginRight="@dimen/size_10"
+                    android:background="@android:color/darker_gray"
+                    android:text="8080"
+                    android:inputType="numberPassword" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="5dp"
+                    android:fontFamily="monospace"
+                    android:gravity="center"
+                    android:text="Enter wifi password"
+                    android:textColor="@color/red"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <EditText
+                    android:id="@+id/et_wifi_pass"
+                    android:layout_width="match_parent"
+                    android:layout_height="@dimen/size_50"
+                    android:layout_marginLeft="@dimen/size_10"
+                    android:text="pratham123"
+                    android:layout_marginRight="@dimen/size_10"
+                    android:background="@android:color/darker_gray" />
+
+                <Button
+                    android:id="@+id/btn_connect"
+                    android:layout_width="@dimen/size_150"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/size_10"
+                    android:text="Connect" />
+            </LinearLayout>
         </LinearLayout>
     </android.support.v7.widget.CardView>
 

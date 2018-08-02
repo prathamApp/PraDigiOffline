@@ -1,6 +1,7 @@
 package com.pratham.prathamdigital.async;
 
 import android.content.Context;
+import android.preference.PreferenceManager;
 import android.util.Base64;
 import android.util.Log;
 
@@ -18,20 +19,15 @@ import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
 import com.androidnetworking.AndroidNetworking;
+import com.androidnetworking.common.Priority;
 import com.androidnetworking.error.ANError;
-import com.androidnetworking.interfaces.DownloadListener;
-import com.androidnetworking.interfaces.DownloadProgressListener;
-import com.androidnetworking.interfaces.JSONArrayRequestListener;
 import com.androidnetworking.interfaces.StringRequestListener;
-import com.pratham.prathamdigital.interfaces.ProgressUpdate;
 import com.pratham.prathamdigital.interfaces.VolleyResult_JSON;
 import com.pratham.prathamdigital.util.PD_Utility;
 
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.File;
 import java.io.UnsupportedEncodingException;
 
 /**
@@ -384,23 +380,75 @@ public class PD_ApiRequest {
                     .getAsString(new StringRequestListener() {
                         @Override
                         public void onResponse(String response) {
-                            Log.d("AndroidNetworking_Error::", response);
                             if (volleyResult != null)
                                 volleyResult.notifySuccess(requestType, response);
                         }
 
                         @Override
                         public void onError(ANError anError) {
+                            if (volleyResult != null)
+                                volleyResult.notifyError(requestType, null);
                             Log.d("AndroidNetworking_Error::", anError.getErrorDetail());
                             Log.d("AndroidNetworking_Error::", anError.getMessage());
                             Log.d("AndroidNetworking_Error::", anError.getResponse().toString());
-                            if (volleyResult != null)
-                                volleyResult.notifyError(requestType, null);
                         }
                     });
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    public void pushDataToRaspberry(String requestType, String url, String data,
+                                    String filter_name, String table_name) {
+        AndroidNetworking.post(url)
+                .addHeaders("Content-Type", "application/json")
+                .addHeaders("Authorization", getAuthHeader("pratham", "pratham"))
+                .addBodyParameter("filter_name", filter_name)
+                .addBodyParameter("table_name", table_name)
+                .addBodyParameter("facility", PreferenceManager.getDefaultSharedPreferences(mContext)
+                        .getString("FACILITY", ""))
+                .addBodyParameter("data", data)
+                .setPriority(Priority.HIGH)
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        volleyResult.notifySuccess(requestType, "success");
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        if (volleyResult != null)
+                            volleyResult.notifyError(requestType, null);
+                        Log.d("AndroidNetworking_Error::", anError.getErrorDetail());
+                        Log.d("AndroidNetworking_Error::", anError.getMessage());
+                        Log.d("AndroidNetworking_Error::", anError.getResponse().toString());
+                    }
+                });
+    }
+
+    public void getacilityIdfromRaspberry(String requestType, String url, JSONObject data) {
+        AndroidNetworking.post(url)
+                .addHeaders("Content-Type", "application/json")
+                .addJSONObjectBody(data)
+                //                .addBodyParameter("data", data)
+//                    .setPriority(Priority.HIGH)
+                .build()
+                .getAsString(new StringRequestListener() {
+                    @Override
+                    public void onResponse(String response) {
+                        volleyResult.notifySuccess(requestType, response);
+                    }
+
+                    @Override
+                    public void onError(ANError anError) {
+                        if (volleyResult != null)
+                            volleyResult.notifyError(requestType, null);
+                        Log.d("AndroidNetworking_Error::", anError.getErrorDetail());
+                        Log.d("AndroidNetworking_Error::", anError.getMessage());
+                        Log.d("AndroidNetworking_Error::", anError.getResponse().toString());
+                    }
+                });
     }
 
     private String getAuthHeader(String ID, String pass) {

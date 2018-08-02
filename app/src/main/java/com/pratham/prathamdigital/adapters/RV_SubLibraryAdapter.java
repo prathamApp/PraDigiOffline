@@ -122,17 +122,17 @@ public class RV_SubLibraryAdapter extends RecyclerView.Adapter<RV_SubLibraryAdap
         });
         if (sub_content.get(holder.getAdapterPosition()).getNodetype().equalsIgnoreCase("Resource")) {
             holder.sub_lib_content_img.setScaleType(ImageView.ScaleType.FIT_XY);
-//            holder.c_delete.setVisibility(View.VISIBLE);
-//            holder.c_delete.setOnClickListener(new View.OnClickListener() {
-//                @Override
-//                public void onClick(View view) {
-//                    browseAdapter_clicks.onContentDelete(holder.getAdapterPosition());
-//                }
-//            });
+            holder.c_delete.setVisibility(View.VISIBLE);
+            holder.c_delete.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    browseAdapter_clicks.onContentDelete(holder.getAdapterPosition());
+                }
+            });
         } else {
             holder.sub_lib_content_img.setScaleType(ImageView.ScaleType.CENTER_CROP);
-//            holder.c_delete.setVisibility(View.GONE);
-//            holder.c_delete.setOnClickListener(null);
+            holder.c_delete.setVisibility(View.GONE);
+            holder.c_delete.setOnClickListener(null);
         }
     }
 

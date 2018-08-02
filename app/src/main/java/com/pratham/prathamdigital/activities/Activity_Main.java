@@ -78,6 +78,7 @@ import com.pratham.prathamdigital.interfaces.VolleyResult_JSON;
 import com.pratham.prathamdigital.models.Modal_ContentDetail;
 import com.pratham.prathamdigital.models.Modal_Level;
 import com.pratham.prathamdigital.models.Modal_Rasp_Content;
+import com.pratham.prathamdigital.models.Modal_Score;
 import com.pratham.prathamdigital.util.ActivityManagePermission;
 import com.pratham.prathamdigital.util.ConnectivityReceiver;
 import com.pratham.prathamdigital.util.CopyFiles;
@@ -87,7 +88,10 @@ import com.pratham.prathamdigital.util.PD_Constant;
 import com.pratham.prathamdigital.util.PD_Utility;
 import com.pratham.prathamdigital.util.PermissionUtils;
 import com.pratham.prathamdigital.util.SDCardUtil;
-import com.thanosfisherman.wifiutils.WifiUtils;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.File;
 import java.io.IOException;
@@ -102,7 +106,6 @@ import java.util.StringTokenizer;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import uk.co.samuelwall.materialtaptargetprompt.MaterialTapTargetPrompt;
 
 // Location
 
@@ -242,6 +245,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         Log.d("googleId::", googleId);
         isInitialized = false;
         pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+        PD_Constant.RASP_IP = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("RASP_IP", null);
         // Location
         // First we need to check availability of play services
 //        if (checkPlayServices()) {
@@ -306,47 +310,47 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 //        isConnected = ConnectivityReceiver.isConnected();
 //    }
 
-//    private void pushNewData() {
-//        // Get New Data from DB(sentFlag = 0)
-//        DatabaseHandler sdb = new DatabaseHandler(Activity_Main.this);
-//        List<Modal_Score> scores = sdb.getNewScores();
-//        if (scores != null && scores.size() > 0) {
-//            JSONArray scoreData = new JSONArray();
-//            {
-//                try {
-//                    for (int i = 0; i < scores.size(); i++) {
-//                        JSONObject _obj = new JSONObject();
-//                        Modal_Score scoreObj = (Modal_Score) scores.get(i);
-//                        try {
-//                            _obj.put("sessionId", scoreObj.SessionId);
-//                            _obj.put("deviceId", scoreObj.DeviceId);
-//                            _obj.put("resourceId", scoreObj.ResourceId);
-//                            _obj.put("questionId", scoreObj.QuestionId);
-//                            _obj.put("scoredMarks", scoreObj.ScoredMarks);
-//                            _obj.put("location", scoreObj.Location);
-//                            _obj.put("totalMarks", scoreObj.TotalMarks);
-//                            _obj.put("startDateTime", scoreObj.StartTime);
-//                            _obj.put("endDateTime", scoreObj.EndTime);
-//                            _obj.put("level", scoreObj.Level);
-//                            scoreData.put(_obj);
-//                            // creating json file
-////                        String requestString = "{  \"scoreData\": " + scoreData + "}";
-////                        String deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
-////                        WriteSettings(Activity_Main.this, requestString, "pushNewDataToServer-" + (deviceId.equals(null) ? "0000" : deviceId));
-//                        } catch (JSONException e) {
-//                            e.printStackTrace();
-//                        }
-//                    }
-//                    // Pushing File to Server
-//                    Log.d("array:::", scoreData.toString());
-//                    new PD_ApiRequest(Activity_Main.this, Activity_Main.this)
-//                            .postDataVolley(Activity_Main.this, "SCORE", "http://prodigi.openiscool.org/api/pushdata/pushdata", scoreData.toString());
-//                } catch (Exception e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        }
-//    }
+    private void pushNewData() {
+        // Get New Data from DB(sentFlag = 0)
+        DatabaseHandler sdb = new DatabaseHandler(Activity_Main.this);
+        List<Modal_Score> scores = sdb.getNewScores();
+        if (scores != null && scores.size() > 0) {
+            JSONArray scoreData = new JSONArray();
+            try {
+                for (int i = 0; i < scores.size(); i++) {
+                    JSONObject _obj = new JSONObject();
+                    Modal_Score scoreObj = (Modal_Score) scores.get(i);
+                    try {
+                        _obj.put("sessionId", scoreObj.SessionId);
+                        _obj.put("deviceId", scoreObj.DeviceId);
+                        _obj.put("resourceId", scoreObj.ResourceId);
+                        _obj.put("questionId", scoreObj.QuestionId);
+                        _obj.put("scoredMarks", scoreObj.ScoredMarks);
+                        _obj.put("location", scoreObj.Location);
+                        _obj.put("totalMarks", scoreObj.TotalMarks);
+                        _obj.put("startDateTime", scoreObj.StartTime);
+                        _obj.put("endDateTime", scoreObj.EndTime);
+                        _obj.put("level", scoreObj.Level);
+                        scoreData.put(_obj);
+                        // creating json file
+//                        String requestString = "{  \"scoreData\": " + scoreData + "}";
+//                        String deviceId = Settings.Secure.getString(getApplicationContext().getContentResolver(), Settings.Secure.ANDROID_ID);
+//                        WriteSettings(Activity_Main.this, requestString, "pushNewDataToServer-" + (deviceId.equals(null) ? "0000" : deviceId));
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+                // Pushing File to Server
+                Log.d("array:::", scoreData.toString());
+                showDialog();
+                new PD_ApiRequest(Activity_Main.this, Activity_Main.this)
+                        .pushDataToRaspberry("SCORE", PD_Constant.RASP_IP + "/pratham/datastore/",
+                                scoreData.toString(), "raspberry", "score");
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
 
     // Method to get Address
     public Address getAddress(double latitude, double longitude) {
@@ -684,30 +688,34 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             } else {
                 // todo scroll up change for raspberry
 //                Toast.makeText(Activity_Main.this, ".mnn,", Toast.LENGTH_SHORT).show();
-                subContents.clear();
-                for (Modal_ContentDetail content : arrayList_content) {
-                    if (content.getParentid() != null) {
-                        if (content.getParentid().equalsIgnoreCase(parent_ids[position]))
-                            subContents.add(content);
-                    }
-                }
-                if (subContents.size() > 0) {
-                    content_rv.setVisibility(View.VISIBLE);
-                    rl_no_content.setVisibility(View.GONE);
-                    if (rv_recommendAdapter == null) {
-                        rv_recommendAdapter = new RV_RecommendAdapter(Activity_Main.this,
-                                Activity_Main.this, subContents);
-                        content_rv.setAdapter(rv_recommendAdapter);
-                    } else {
-                        content_rv.setAdapter(rv_recommendAdapter);
-                        content_rv.getViewTreeObserver().addOnPreDrawListener(preDrawListenerContent);
-                        rv_recommendAdapter.updateData(subContents);
-                        Log.d("content_size::", arrayList_content.size() + "");
-                    }
-                } else {
-                    content_rv.setVisibility(View.GONE);
-                    rl_no_content.setVisibility(View.VISIBLE);
-                }
+//                showDialog();
+                new PD_ApiRequest(Activity_Main.this, Activity_Main.this).
+                        getContentFromRaspberry("CONTENT_CHILD",
+                                PD_Constant.RASP_IP + "/api/contentnode?parent=f9da12749d995fa197f8b4c0192e7b2c");
+//                subContents.clear();
+//                for (Modal_ContentDetail content : arrayList_content) {
+//                    if (content.getParentid() != null) {
+//                        if (content.getParentid().equalsIgnoreCase(parent_ids[position]))
+//                            subContents.add(content);
+//                    }
+//                }
+//                if (subContents.size() > 0) {
+//                    content_rv.setVisibility(View.VISIBLE);
+//                    rl_no_content.setVisibility(View.GONE);
+//                    if (rv_recommendAdapter == null) {
+//                        rv_recommendAdapter = new RV_RecommendAdapter(Activity_Main.this,
+//                                Activity_Main.this, subContents);
+//                        content_rv.setAdapter(rv_recommendAdapter);
+//                    } else {
+//                        content_rv.setAdapter(rv_recommendAdapter);
+//                        content_rv.getViewTreeObserver().addOnPreDrawListener(preDrawListenerContent);
+//                        rv_recommendAdapter.updateData(subContents);
+//                        Log.d("content_size::", arrayList_content.size() + "");
+//                    }
+//                } else {
+//                    content_rv.setVisibility(View.GONE);
+//                    rl_no_content.setVisibility(View.VISIBLE);
+//                }
             }
         }
     };
@@ -796,36 +804,20 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         PopupMenu popup = new PopupMenu(Activity_Main.this, fab_search);
         //Inflating the Popup using xml file
         popup.getMenuInflater().inflate(R.menu.popup_menu, popup.getMenu());
-
         //registering popup with OnMenuItemClickListener
         popup.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
             public boolean onMenuItemClick(MenuItem item) {
-
-                // Check folder exists on Internal
-                File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
-                if (intPradigi.exists()) {
-                    // Data found on Internal Storage
-                    intStorageAvailable();
-                }
-                // Check extSDCard present or not
-                else if (hasRealRemovableSdCard(Activity_Main.this)) {
-                    // SD Card Available
-                    extSDCardAvailable();
-                }
-
+                //PUSH DATA TO KOLIBRI
+                pushNewData();
                 return true;
             }
         });
-
         popup.show();//showing popup menu
-
     }
 
     private void intStorageAvailable() {
-
         new CopyFiles(db, shareItPath, Activity_Main.this,
                 Activity_Main.this).execute();
-
     }
 
 
@@ -1023,22 +1015,49 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
     @SuppressLint("RestrictedApi")
     @OnClick(R.id.fab_share)
     public void FTPModule() {
+        if (to_be_downloaded.size() == 0)
+            contentDownloading.clear();
+        arrayList_level.clear();
         // Select PraDigi Path
         String path = "";
         // TODO Path Change
         // Check folder exists on Internal
         File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
-        if (intPradigi.exists()) {
-            // Data found on Internal Storage
-            //path = Environment.getExternalStorageDirectory() + "/PraDigi/databases/PrathamDB";
-            PrathamApplication.setPath(intPradigi.toString());
-            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("PATH",
-                    intPradigi.toString()).apply();
-            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("URI",
-                    null).apply();
-            PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putBoolean("IS_SDCARD",
-                    false).apply();
-            // goto Dashboard if path is selected
+        String ip = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this)
+                .getString("RASP_IP", null);
+        if (ip == null || ip.isEmpty()) {
+            Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+            ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
+            startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
+        } else {
+//            if (intPradigi.exists()) {
+//                // Data found on Internal Storage
+//                //path = Environment.getExternalStorageDirectory() + "/PraDigi/databases/PrathamDB";
+//                PrathamApplication.setPath(intPradigi.toString());
+//                PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("PATH",
+//                        intPradigi.toString()).apply();
+//                PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putString("URI",
+//                        null).apply();
+//                PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).edit().putBoolean("IS_SDCARD",
+//                        false).apply();
+//                // goto Dashboard if path is selected
+//                if (!PD_Utility.checkWhetherConnectedToRaspberry(Activity_Main.this)) {
+//                    Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
+//                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
+//                    startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
+//                } else {
+//                    onActivityResult(ACTIVITY_DOWNLOAD_METHOD, 0, null);
+//                }
+//            }
+//            // Check extSDCard present or not
+//            else if (hasRealRemovableSdCard(Activity_Main.this)) {
+//                // sd card select
+//                if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", null) == null) {
+//                    Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
+//                    intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
+//                    startActivityForResult(intent, PraDigiPath);
+//                } else {
+//                    PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", ""));
             if (!PD_Utility.checkWhetherConnectedToRaspberry(Activity_Main.this)) {
                 Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
                 ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
@@ -1046,24 +1065,8 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             } else {
                 onActivityResult(ACTIVITY_DOWNLOAD_METHOD, 0, null);
             }
-        }
-        // Check extSDCard present or not
-        else if (hasRealRemovableSdCard(Activity_Main.this)) {
-            // sd card select
-            if (PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", null) == null) {
-                Intent intent = new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE);
-                intent.addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION);
-                startActivityForResult(intent, PraDigiPath);
-            } else {
-                PrathamApplication.setPath(PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("PATH", ""));
-                if (!PD_Utility.checkWhetherConnectedToRaspberry(Activity_Main.this)) {
-                    Intent i = new Intent(Activity_Main.this, DashboardActivity.class);
-                    ActivityOptions options = ActivityOptions.makeSceneTransitionAnimation(Activity_Main.this, fab_share, "transition_dialog");
-                    startActivityForResult(i, ACTIVITY_DOWNLOAD_METHOD, options.toBundle());
-                } else {
-                    onActivityResult(ACTIVITY_DOWNLOAD_METHOD, 0, null);
-                }
-            }
+//                }
+//            }
         }
 
 /*        // Select Download Method
@@ -1165,7 +1168,8 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         } else if (requestCode == ACTIVITY_DOWNLOAD_METHOD) {
             showDialog();
             new PD_ApiRequest(Activity_Main.this, Activity_Main.this).
-                    getContentFromRaspberry("CONTENT_HEADER", "http://192.168.4.1:8080/api/contentnode");
+                    getContentFromRaspberry("CONTENT_HEADER",
+                            PD_Constant.RASP_IP + "/api/contentnode?content_id=f9da12749d995fa197f8b4c0192e7b2c");
         } else if (requestCode == SDCardLocationChooser) {
             Uri treeUri = data.getData();
             String path = SDCardUtil.getFullPathFromTreeUri(treeUri, Activity_Main.this);
@@ -1266,7 +1270,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     } else {
                         openGameInWebView(subContents.get(position));
                     }
-                } else if (subContents.get(position).getResourcetype().equalsIgnoreCase("pdf")) {
+                } else if (subContents.get(position).getResourcetype().equalsIgnoreCase("Pdf")) {
                     Intent intent = new Intent(Activity_Main.this, Activity_PdfViewer.class);
                     //TODO change path
                     File directory = Activity_Main.this.getDir("PrathamPdf", Context.MODE_PRIVATE);
@@ -1367,7 +1371,23 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             level.setName(subContents.get(position).getNodetitle());
             setRecyclerLevel(level);
             String p_id = subContents.get(position).getNodeid();
-            showChildContent(p_id);
+            if (contentDownloading.size() > 0) {
+                for (int i = 0; i < contentDownloading.size(); i++) {
+                    if (!contentDownloading.get(i).getNodeid().equalsIgnoreCase(p_id)) {
+                        contentDownloading.add(subContents.get(position));
+                        break;
+                    }
+                }
+            } else {
+                contentDownloading.add(subContents.get(position));
+            }
+
+            showDialog();
+            new PD_ApiRequest(Activity_Main.this, Activity_Main.this).
+                    getContentFromRaspberry("CONTENT_CHILD",
+                            PD_Constant.RASP_IP + "/api/contentnode?parent=" + p_id);
+
+//            showChildContent(p_id);
         }
     }
 
@@ -1488,10 +1508,9 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     public void onClick(SweetAlertDialog sDialog) {
                         // reuse previous dialog instance
                         String parentId = subContents.get(position).getParentid();
-                        db.deleteContentFromChild(subContents.get(position).getNodeid());
-                        String substr[] = subContents.get(position).getResourcepath().split("/");
-                        deleteResource(subContents.get(position).getResourcetype(), substr[0]);
-                        checkAndDeleteParent(parentId);
+                        String substr = subContents.get(position).getNodekeywords();
+                        String nodeId = subContents.get(position).getNodeid();
+                        deleteResource(subContents.get(position).getResourcetype(), substr, nodeId, parentId);
                         sDialog.setTitleText("Deleted!")
                                 .setContentText("Your imaginary file has been deleted!")
                                 .setConfirmText("OK")
@@ -1508,20 +1527,17 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 .show();
     }
 
-    private void deleteResource(String resourcetype, String resourcePath) {
-        if (resourcetype.equalsIgnoreCase("Game")) {
+    private void deleteResource(String resourcetype, String resourcePath, String nodeId, String parentId) {
+        if (!resourcetype.isEmpty()) {
             //TODO change path
-            File dir = getDir("PrathamGame", Context.MODE_PRIVATE);
+            File dir = getDir("Pratham" + resourcetype, Context.MODE_PRIVATE);
             if (dir == null || dir.listFiles().length == 0) {
-
-
                 String path = "";
                 // Check folder exists on Internal
                 File intPradigi = new File(Environment.getExternalStorageDirectory() + "/PraDigi");
                 if (intPradigi.exists()) {
                     // Data found on Internal Storage
-                    path = Environment.getExternalStorageDirectory() + "/PraDigi/app_PrathamGame";
-
+                    path = Environment.getExternalStorageDirectory() + "/PraDigi/app_Pratham" + resourcetype;
                 }
                 // Check extSDCard present or not
                 else if (hasRealRemovableSdCard(Activity_Main.this)) {
@@ -1542,8 +1558,6 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     finish();
                 }
 
-
-
                 /*// OLD CODE
                 String uri = PreferenceManager.getDefaultSharedPreferences(Activity_Main.this).getString("URI", "");
                 DocumentFile pickedDir = DocumentFile.fromTreeUri(Activity_Main.this, Uri.parse(uri));
@@ -1554,9 +1568,20 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 */
                 dir = new File(path);
             }
-            File file = new File(dir.getAbsolutePath() + "/" + resourcePath);
+            File file;
+            if (resourcetype.equalsIgnoreCase("Video")) {
+                file = new File(dir.getAbsolutePath() + "/" + resourcePath + ".mp4");
+            } else if (resourcetype.equalsIgnoreCase("Pdf")) {
+                file = new File(dir.getAbsolutePath() + "/" + resourcePath + ".pdf");
+            } else {
+                file = new File(dir.getAbsolutePath() + "/" + resourcePath);
+            }
             Log.d("dir_path2::", file.getAbsolutePath());
             boolean deleted = deleteDir(file);
+            if (deleted) {
+                db.deleteContentFromChild(nodeId);
+                checkAndDeleteParent(parentId);
+            }
             Log.d("dir_path_deleted::", "" + deleted);
         }
     }
@@ -1585,9 +1610,6 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             if (!p_id.equalsIgnoreCase("-1")) {
                 checkAndDeleteParent(p_id);
             }
-            /*
-            delete file from internal
-             */
         }
     }
 
@@ -1624,9 +1646,9 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                     rl_no_content.setVisibility(View.VISIBLE);
                 }
             } else if (requestType.equalsIgnoreCase("DOWNLOAD")) {
-                contentDownloading.clear();
+//                contentDownloading.clear();
                 contentDownloading.add(to_be_downloaded.get(0));
-                getContentParents(to_be_downloaded.get(0).getParentid());
+//                getContentParents(to_be_downloaded.get(0).getParentid());
                 String url = to_be_downloaded.get(0).getResourcepath();
                 String fileName = to_be_downloaded.get(0).getResourcepath().substring(
                         to_be_downloaded.get(0).getResourcepath().lastIndexOf('/') + 1);
@@ -1646,7 +1668,42 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             } else if (requestType.equalsIgnoreCase("SCORE")) {
                 // Reset sentFlag to 1 if Pushed
                 Log.d("success:::", "score");
+                Toast.makeText(Activity_Main.this, "Data Pushed successfully", Toast.LENGTH_SHORT).show();
                 resetSentFlag();
+                if (dialog != null)
+                    dialog.dismiss();
+            } else if (requestType.equalsIgnoreCase("CONTENT_CHILD")) {
+                // Reset sentFlag to 1 if Pushed
+                subContents.clear();
+                Type listType = new TypeToken<ArrayList<Modal_Rasp_Content>>() {
+                }.getType();
+                List<Modal_Rasp_Content> rasp_contents = gson.fromJson(response, listType);
+                for (Modal_Rasp_Content modal_rasp_content : rasp_contents) {
+                    subContents.add(modal_rasp_content.setContentToConfigNodeStructure(modal_rasp_content));
+                }
+                PD_Utility.DEBUG_LOG(1, TAG, "content_length:::" + subContents.size());
+                subContents = removeContentIfDownloaded(subContents);
+                subContents = checkIfAlreadyDownloading(subContents);
+                if (subContents.size() > 0) {
+                    content_rv.setVisibility(View.VISIBLE);
+                    rl_no_content.setVisibility(View.GONE);
+                    if (rv_recommendAdapter == null) {
+                        rv_recommendAdapter = new RV_RecommendAdapter(Activity_Main.this,
+                                Activity_Main.this, subContents);
+                        content_rv.setAdapter(rv_recommendAdapter);
+                    } else {
+                        content_rv.setAdapter(rv_recommendAdapter);
+                        content_rv.getViewTreeObserver().addOnPreDrawListener(preDrawListenerContent);
+                        rv_recommendAdapter.updateData(subContents);
+                        Log.d("content_size::", arrayList_content.size() + "");
+                    }
+                } else {
+                    content_rv.setVisibility(View.GONE);
+                    rl_no_content.setVisibility(View.VISIBLE);
+                }
+
+                if (dialog != null)
+                    dialog.dismiss();
             } else if (requestType.equalsIgnoreCase("CONTENT_HEADER")) {
                 arrayList_content.clear();
                 isLibrary = false;
@@ -1658,9 +1715,10 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 for (Modal_Rasp_Content modal_rasp_content : rasp_contents) {
                     arrayList_content.add(modal_rasp_content.setContentToConfigNodeStructure(modal_rasp_content));
                 }
+                contentDownloading.addAll(arrayList_content);
                 PD_Utility.DEBUG_LOG(1, TAG, "content_length:::" + arrayList_content.size());
-                arrayList_content = removeContentIfDownloaded(arrayList_content);
-                arrayList_content = checkIfAlreadyDownloading(arrayList_content);
+//                arrayList_content = removeContentIfDownloaded(arrayList_content);
+//                arrayList_content = checkIfAlreadyDownloading(arrayList_content);
                 ArrayList<String> temp_age = new ArrayList<>();
                 ArrayList<String> temp_parent = new ArrayList<>();
                 for (int i = 0; i < arrayList_content.size(); i++) {
@@ -1681,8 +1739,8 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
                 level.setId(parent_ids[0]);
                 level.setName(age[0]);
                 setRecyclerLevel(level);
-                if (dialog != null)
-                    dialog.dismiss();
+//                if (dialog != null)
+//                    dialog.dismiss();
             }
         } catch (JsonSyntaxException e) {
             e.printStackTrace();
@@ -1695,17 +1753,17 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         }
     }
 
-    private void getContentParents(String parentid) {
-        for (Modal_ContentDetail contentDetail : arrayList_content) {
-            if (parentid.equalsIgnoreCase(contentDetail.getNodeid())) {
-                contentDownloading.add(contentDetail);
-                if (contentDetail.getParentid() != null) {
-                    getContentParents(contentDetail.getParentid());
-                }
-                break;
-            }
-        }
-    }
+//    private void getContentParents(String parentid) {
+//        for (Modal_ContentDetail contentDetail : arrayList_content) {
+//            if (parentid.equalsIgnoreCase(contentDetail.getNodeid())) {
+//                contentDownloading.add(contentDetail);
+//                if (contentDetail.getParentid() != null) {
+//                    getContentParents(contentDetail.getParentid());
+//                }
+//                break;
+//            }
+//        }
+//    }
 
     private void resetSentFlag() {
         // Reset Sent Flag to 1 if Pushed
@@ -1854,7 +1912,7 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
 
     @Override
     public void onZipExtracted(boolean isExtracted) {
-        addContentToDatabase(contentDownloading);
+        getParentsAndAddToDB(contentDownloading, to_be_downloaded.get(0).getNodeid(), null);
         if (isExtracted) {
             for (int i = 0; i < subContents.size(); i++) {
                 if (subContents.get(i).getNodeid() == to_be_downloaded.get(0).getNodeid()) {
@@ -1872,6 +1930,24 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
             } else {
                 main_rl_download.startAnimation(AnimationUtils.loadAnimation(Activity_Main.this, R.anim.fab_scale_down));
                 main_rl_download.setVisibility(View.GONE);
+            }
+        }
+    }
+
+    private void getParentsAndAddToDB(ArrayList<Modal_ContentDetail> download, String nodeid
+            , ArrayList<Modal_ContentDetail> parentsContent) {
+        if (parentsContent == null) {
+            parentsContent = new ArrayList<>();
+        }
+        for (int i = 0; i < download.size(); i++) {
+            if (download.get(i).getNodeid().equalsIgnoreCase(nodeid)) {
+                parentsContent.add(download.get(i));
+                if (download.get(i).getParentid() != null) {
+                    getParentsAndAddToDB(download, download.get(i).getParentid(), parentsContent);
+                } else {
+                    addContentToDatabase(parentsContent);
+                }
+                break;
             }
         }
     }
@@ -1919,35 +1995,14 @@ Activity_Main extends ActivityManagePermission implements MainActivityAdapterLis
         } else {
             String p_id = arrayList_level.get(position).getId();
             arrayList_level.subList(position + 1, arrayList_level.size()).clear();
-            showChildContent(p_id);
+            showDialog();
+            new PD_ApiRequest(Activity_Main.this, Activity_Main.this).
+                    getContentFromRaspberry("CONTENT_CHILD",
+                            PD_Constant.RASP_IP + "/api/contentnode?parent=" + p_id);
         }
     }
 
     private void showChildContent(String p_id) {
-        subContents.clear();
-        for (Modal_ContentDetail content : arrayList_content) {
-            if (content.getParentid() != null) {
-                if (content.getParentid().equalsIgnoreCase(p_id))
-                    subContents.add(content);
-            }
-        }
-        if (subContents.size() > 0) {
-            content_rv.setVisibility(View.VISIBLE);
-            rl_no_content.setVisibility(View.GONE);
-            if (rv_recommendAdapter == null) {
-                rv_recommendAdapter = new RV_RecommendAdapter(Activity_Main.this,
-                        Activity_Main.this, subContents);
-                content_rv.setAdapter(rv_recommendAdapter);
-            } else {
-                content_rv.setAdapter(rv_recommendAdapter);
-                content_rv.getViewTreeObserver().addOnPreDrawListener(preDrawListenerContent);
-                rv_recommendAdapter.updateData(subContents);
-                Log.d("content_size::", arrayList_content.size() + "");
-            }
-        } else {
-            content_rv.setVisibility(View.GONE);
-            rl_no_content.setVisibility(View.VISIBLE);
-        }
     }
 
     @Override

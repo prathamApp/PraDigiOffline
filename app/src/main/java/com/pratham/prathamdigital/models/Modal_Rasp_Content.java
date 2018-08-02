@@ -1,9 +1,9 @@
 package com.pratham.prathamdigital.models;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.google.gson.annotations.SerializedName;
+import com.pratham.prathamdigital.util.PD_Constant;
+
+import java.util.List;
 
 public class Modal_Rasp_Content {
 
@@ -239,9 +239,9 @@ public class Modal_Rasp_Content {
                 modal_contentDetail.setNodetype("Resource");
                 modal_contentDetail.setResourcetype("Video");
                 break;
-            case "pdf":
+            case "document":
                 modal_contentDetail.setNodetype("Resource");
-                modal_contentDetail.setResourcetype("pdf");
+                modal_contentDetail.setResourcetype("Pdf");
                 break;
             default:
                 modal_contentDetail.setNodetype(modal_rasp_content.getKind());
@@ -252,17 +252,17 @@ public class Modal_Rasp_Content {
         modal_contentDetail.setNodedesc(modal_rasp_content.getDescription());
         for (Modal_Rasp_ContentFilesItem filesItem : modal_rasp_content.getFiles()) {
             if (filesItem.isThumbnail()) {
-                modal_contentDetail.setNodeimage("http://192.168.4.1:8080" + filesItem.getDownloadUrl());
-                modal_contentDetail.setNodeserverimage("http://192.168.4.1:8080" + filesItem.getDownloadUrl());
+                modal_contentDetail.setNodeimage(PD_Constant.RASP_IP + filesItem.getDownloadUrl());
+                modal_contentDetail.setNodeserverimage(PD_Constant.RASP_IP + filesItem.getDownloadUrl());
             } else {
                 if (modal_contentDetail.getResourcetype().equalsIgnoreCase("Game")) {
-                    modal_contentDetail.setResourcepath("http://192.168.4.1:8080" + filesItem.getDownloadUrl());
+                    modal_contentDetail.setResourcepath(PD_Constant.RASP_IP + filesItem.getDownloadUrl());
                     String filename = filesItem.getDownloadUrl()
                             .substring(filesItem.getDownloadUrl().lastIndexOf('/') + 1);
                     filename = filename.substring(0, filename.lastIndexOf("."));
                     modal_contentDetail.setNodekeywords(filename);
                 } else {
-                    modal_contentDetail.setResourcepath("http://192.168.4.1:8080" + filesItem.getStorageUrl().toString());
+                    modal_contentDetail.setResourcepath(PD_Constant.RASP_IP + filesItem.getStorageUrl().toString());
                     String filename = filesItem.getStorageUrl().toString()
                             .substring(filesItem.getStorageUrl().toString().lastIndexOf('/') + 1);
                     filename = filename.substring(0, filename.lastIndexOf("."));

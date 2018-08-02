@@ -55,9 +55,7 @@ import android.view.inputmethod.InputMethodManager;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.pratham.prathamdigital.PrathamApplication;
 import com.pratham.prathamdigital.R;
-import com.thanosfisherman.wifiutils.WifiUtils;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -1486,7 +1484,7 @@ public class PD_Utility {
         if (wifiManager.isWifiEnabled()) {
             WifiInfo wifiInfo = wifiManager.getConnectionInfo();
             String ssid = wifiInfo.getSSID();
-            if (ssid.contains(PrathamApplication.hotspot_name))
+            if (ssid.contains("prathamkolibri"))
                 return true;
             else
                 return false;

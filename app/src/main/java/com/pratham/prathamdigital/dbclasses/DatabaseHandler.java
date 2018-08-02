@@ -192,10 +192,8 @@ public class DatabaseHandler extends SQLiteOpenHelper {
             List<Modal_Score> scoreList = new ArrayList<Modal_Score>();
             Modal_Score score;
             cursor.moveToFirst();
-
             while (cursor.isAfterLast() == false) {
                 score = new Modal_Score();
-
                 score.SessionId = cursor.getString(cursor.getColumnIndex("sessionId"));
                 score.ResourceId = cursor.getString(cursor.getColumnIndex("resourceId"));
                 score.DeviceId = cursor.getString(cursor.getColumnIndex("deviceId"));
@@ -204,9 +202,7 @@ public class DatabaseHandler extends SQLiteOpenHelper {
                 score.TotalMarks = cursor.getInt(cursor.getColumnIndex("totalMarks"));
                 score.StartTime = cursor.getString(cursor.getColumnIndex("startDateTime"));
                 score.EndTime = cursor.getString(cursor.getColumnIndex("endDateTime"));
-
                 scoreList.add(score);
-
                 cursor.moveToNext();
                 db.close();
             }
